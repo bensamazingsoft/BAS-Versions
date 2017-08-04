@@ -1,7 +1,12 @@
 package com.bas.versions.utils;
 
+import static com.bas.versions.utils.FileManager.changeFilePath;
+import static com.bas.versions.utils.FileManager.copyFile2VersionPath;
+import static com.bas.versions.utils.FileManager.writeTxtFile;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -13,12 +18,17 @@ import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.bas.versions.gui.BasPgBarUpdtePair;
 import com.bas.versions.gui.BasProgressBar;
 
-public class Version extends Observable {
+public class Version extends Observable implements Comparable<Version>, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1509582280653749478L;
 	private static int versionId = 1;
 	private int id;
 
@@ -30,58 +40,121 @@ public class Version extends Observable {
 	private Path projectPath;
 	private String versionMsg = "";
 	private String formatId;
-    private BasProgressBar pgBar;
-    
+	private BasProgressBar pgBar;
+
 	public Version() {
 		this.dateCreated = null;
 		this.versionPath = null;
 		this.id = versionId;
 	}
 
-	public Version(Date date, Path projectPath, HashSet<File> fileModList, String msg) {
+	public Version(Date date, Path projectPath, Set<File> fileModList, String msg) {
 
 		this.id = versionId;
 		this.formatId = String.format("%04d", this.id);
 		this.dateCreated = date;
 		this.projectPath = projectPath;
-		this.versionPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\" + "Vers" + this.formatId + "["
-				+ new SimpleDateFormat("yyy-MM-dd_HH-MM").format(dateCreated) + "]");
+		this.versionPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-Versions" + "\\" + "Vers" + this.formatId + "["
+				+ new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
 		this.versionMsg = msg;
 		this.projectFileList = fileModList;
 		this.fileTab = new File[2][fileModList.size()];
 		this.versionFileList = createVersFileList(fileModList);
-		
+
 	}
 
-	@SuppressWarnings("static-access")
-	public void writeFiles() throws IOException {
-		pgBar = new BasProgressBar("Copying Files toVersion" + formatId, this.fileTab.length + 3 );
+	/**
+	 * @param projectFileList
+	 * @return
+	 */
+	public HashSet<File> createVersFileList(Set<File> projectFileList) {
+		HashSet<File> versFileList = new HashSet<>();
+
+		BasPgBarUpdtePair pair;
+
+		pgBar = new BasProgressBar("Indexing Version " + formatId + " files", projectFileList.size());
 		this.addObserver(pgBar);
 		pgBar.setVisible(true);
+
+		Iterator<File> it = projectFileList.iterator();
+		int i = 0;
+		while (it.hasNext()) {
+
+			File file = it.next();
+			File newFile = changeFilePath(file, this.projectPath, this.versionPath);
+			versFileList.add(newFile);
+			this.fileTab[0][i] = file;
+			this.fileTab[1][i] = newFile;
+			pair = new BasPgBarUpdtePair("Indexed file : " + file.getName(), i + 1);
+			i++;
+			setChanged();
+			notifyObservers(pair);
+		}
+		i = 0;
+		pgBar.dispose();
+		return versFileList;
+	}
+
+	/**
+	 * writes Version files to disk
+	 * 
+	 * @throws IOException
+	 */
+	@SuppressWarnings("static-access")
+	public void writeFiles() {
+
 		BasPgBarUpdtePair pair;
-		
-		for (int i = 0; i <= this.fileTab.length; i++) {
-			boolean success = FileManager.copyFile2VersionPath(this.fileTab[0][i], this.fileTab[1][i],
-					this.versionPath);
+
+		pgBar = new BasProgressBar("Copying Files toVersion" + formatId, this.fileTab.length + 3);
+		this.addObserver(pgBar);
+		pgBar.setVisible(true);
+
+		for (int i = 0; i < this.fileTab[0].length; i++) {
+			boolean success = false;
+			try {
+				success = copyFile2VersionPath(this.fileTab[0][i], this.fileTab[1][i]);
+			} catch (IOException e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						JOptionPane.showMessageDialog(null, "Error", "Can't read file", JOptionPane.ERROR_MESSAGE);
+					}
+				});
+			}
 			if (!success) {
-				JOptionPane error = new JOptionPane();
-				error.showMessageDialog(null, "Error", "File copy Failed on file: \n" + fileTab[0][i].getName(),
-						JOptionPane.ERROR_MESSAGE);
+				final String errorMsg = "File copy Failed on file: \n" + fileTab[0][i].getName();
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						JOptionPane error = new JOptionPane();
+						error.showMessageDialog(null, "Error", errorMsg, JOptionPane.ERROR_MESSAGE);
+					}
+				});
 			} else {
-				pair = new BasPgBarUpdtePair("Copied file : " + this.fileTab[1][i].getName() , i+1);
+				pair = new BasPgBarUpdtePair("Copied file : " + this.fileTab[1][i].getName(), i + 1);
 				setChanged();
 				notifyObservers(pair);
 			}
 		}
-		boolean success;
+		boolean success = false;
 		String title = "Version " + formatId + " Message";
-		success = FileManager.writeTxtFile(versionMsg, title, versionPath);
+		try {
+			success = writeTxtFile(versionMsg, title, versionPath);
+		} catch (IOException e) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JOptionPane.showMessageDialog(null, "Error", "Can't read file", JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		}
 		if (!success) {
-			JOptionPane error = new JOptionPane();
-			error.showMessageDialog(null, "Error", "File copy Failed on Message.txt file.",
-					JOptionPane.ERROR_MESSAGE);
-		}else {
-			pair = new BasPgBarUpdtePair("Copied file : " + title + ".txt" , this.fileTab.length + 3);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JOptionPane error = new JOptionPane();
+					error.showMessageDialog(null, "Error", "File copy Failed on Message.txt file.",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		} else {
+			pair = new BasPgBarUpdtePair("Copied file : " + title + ".txt", this.fileTab.length + 3);
 			setChanged();
 			notifyObservers(pair);
 		}
@@ -102,32 +175,65 @@ public class Version extends Observable {
 			msg = this.versionMsg.substring(0, 30) + "...";
 		}
 		String str = "Version " + formatId + "[" + msg + "]";
-
 		return str;
 	}
 
-	/**
-	 * @param projectFileList
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#hashCode()
 	 */
-	public HashSet<File> createVersFileList(HashSet<File> projectFileList) {
-		HashSet<File> versFileList = new HashSet<>();
-
-		Iterator<File> it = projectFileList.iterator();
-		int i = 0;
-		while (it.hasNext()) {
-
-			File file = it.next();
-			File newFile = FileManager.changeFilePath(file, this.projectPath, this.versionPath);
-			versFileList.add(newFile);
-			this.fileTab[0][i] = file;
-			this.fileTab[1][i] = newFile;
-			i++;
-		}
-		i = 0;
-		return versFileList;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((dateCreated == null) ? 0 : dateCreated.hashCode());
+		result = prime * result + id;
+		result = prime * result + ((versionFileList == null) ? 0 : versionFileList.hashCode());
+		result = prime * result + ((versionMsg == null) ? 0 : versionMsg.hashCode());
+		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Version other = (Version) obj;
+		if (dateCreated == null) {
+			if (other.dateCreated != null)
+				return false;
+		} else if (!dateCreated.equals(other.dateCreated))
+			return false;
+		if (id != other.id)
+			return false;
+		if (versionFileList == null) {
+			if (other.versionFileList != null)
+				return false;
+		} else if (!versionFileList.equals(other.versionFileList))
+			return false;
+		if (versionMsg == null) {
+			if (other.versionMsg != null)
+				return false;
+		} else if (!versionMsg.equals(other.versionMsg))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int compareTo(Version v) {
+		return this.dateCreated.compareTo(v.dateCreated);
+	}
+
+	// {{{ getters and setters
 	/**
 	 * @return the versionId
 	 */
@@ -142,12 +248,6 @@ public class Version extends Observable {
 	public static void setVersionId(int versionId) {
 		Version.versionId = versionId;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Observable#addObserver(java.util.Observer)
-	 */
 
 	@Override
 	public synchronized void addObserver(Observer o) {
@@ -338,5 +438,6 @@ public class Version extends Observable {
 	public void setProjectPath(Path projectPath) {
 		this.projectPath = projectPath;
 	}
+	// }}}
 
 }
