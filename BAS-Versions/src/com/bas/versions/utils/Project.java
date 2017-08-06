@@ -1,18 +1,19 @@
 package com.bas.versions.utils;
 
+import static com.bas.versions.utils.FileManager.saveFile;
+
 import java.io.File;
-import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Observable;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
-import static com.bas.versions.utils.FileManager.*;
 
-public class Project extends Observable implements Serializable {
+public class Project extends Observable {
 
 	/**
 	 * 
@@ -23,10 +24,10 @@ public class Project extends Observable implements Serializable {
 	private Date dateCreated;
 	private String filterIn;
 	private String filterOut;
-	private String versMsg;
+	private String chkptMsg;
 	private Path projectPath;
 	private Path workPath;
-	private Queue<Version> versionStack;
+	private Queue<CheckPoint> checkpointStack;
 	private Set<File> fileSet;
 	private Set<File> modFileSet;
 	private Set<File> filteredFileSet;
@@ -38,10 +39,10 @@ public class Project extends Observable implements Serializable {
 		this.dateCreated = new Date();
 		this.filterIn = "";
 		this.filterOut = "";
-		this.versMsg = "No message";
+		this.chkptMsg = "No message";
 		this.projectPath = null;
 		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-Versions");
-		this.versionStack = new PriorityQueue<>();
+		this.checkpointStack = new PriorityQueue<>();
 		this.fileSet = new HashSet<File>();
 		this.modFileSet = new HashSet<File>();
 		this.filteredFileSet = new HashSet<File>();
@@ -55,11 +56,11 @@ public class Project extends Observable implements Serializable {
 		this.id = projectId;
 		this.dateCreated = new Date();
 		this.filterIn = ".aep,.prpj,.psd,.ai,.txt,.srt";
-		this.filterOut = "rush, rush, source, sources, BAS-Versions";
-		this.versMsg = "New project : " + projectPath.toFile().getName();
+		this.filterOut = "rush,rush,source,sources,BAS-Checkpoints";
+		this.chkptMsg = "New project : " + projectPath.toFile().getName();
 		this.projectPath = projectPath;
-		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-Versions");
-		this.versionStack = new PriorityQueue<>();
+		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		this.checkpointStack = new LinkedList<>();
 		this.fileSet = new FileList(this.projectPath).getResult();
 		this.filteredFileSet = new FileList(this.fileSet, this.filterIn, this.filterOut, this.projectPath).getResult();
 		this.modFileSet = new FileList(this.filteredFileSet, this.dateCreated).getResult();
@@ -68,12 +69,12 @@ public class Project extends Observable implements Serializable {
 
 	}
 
-	public void commitVersion() {
+	public void commitCheckPoint() {
 		File dateSave = new File(this.workPath + "\\data.basv");
-		Version newVers = new Version(new Date(), this.projectPath, this.modFileSet, this.versMsg);
+		CheckPoint newVers = new CheckPoint(new Date(), this.projectPath, this.modFileSet, this.chkptMsg);
 		newVers.writeFiles();
 		saveFile(newVers.getDateCreated(), dateSave);
-		versionStack.add(newVers);
+		checkpointStack.add(newVers);
 		setChanged();
 		notifyObservers();
 	}
@@ -86,10 +87,10 @@ public class Project extends Observable implements Serializable {
 		
 		this.fileSet = new FileList(this.projectPath).getResult();
 		this.filteredFileSet = new FileList(this.fileSet, this.filterIn, this.filterOut, this.projectPath).getResult();
-		if (this.getVersionStack().peek() == null) {
+		if (this.getCheckPointStack().peek() == null) {
 			this.modFileSet = new FileList(this.filteredFileSet, this.dateCreated).getResult();
 		} else {
-			this.modFileSet = new FileList(this.filteredFileSet, this.getVersionStack().peek().getDateCreated()).getResult();
+			this.modFileSet = new FileList(this.filteredFileSet, this.getCheckPointStack().peek().getDateCreated()).getResult();
 		}
 		setChanged();
 		notifyObservers();
@@ -207,16 +208,16 @@ public class Project extends Observable implements Serializable {
 	/**
 	 * @return the versionStack
 	 */
-	public Queue<Version> getVersionStack() {
-		return versionStack;
+	public Queue<CheckPoint> getCheckPointStack() {
+		return checkpointStack;
 	}
 
 	/**
 	 * @param versionStack
 	 *            the versionStack to set
 	 */
-	public void setVersionStack(Queue<Version> versionStack) {
-		this.versionStack = versionStack;
+	public void setVersionStack(Queue<CheckPoint> versionStack) {
+		this.checkpointStack = versionStack;
 	}
 
 	/**
@@ -268,14 +269,14 @@ public class Project extends Observable implements Serializable {
 	 * @return the versMsg
 	 */
 	public String getVersMsg() {
-		return versMsg;
+		return chkptMsg;
 	}
 
 	/**
 	 * @param versMsg the versMsg to set
 	 */
 	public void setVersMsg(String versMsg) {
-		this.versMsg = versMsg;
+		this.chkptMsg = versMsg;
 	}
 
 	// }}}

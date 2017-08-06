@@ -21,7 +21,7 @@ import javax.swing.SwingUtilities;
 import com.bas.versions.gui.BasPgBarUpdtePair;
 import com.bas.versions.gui.BasProgressBar;
 
-public class FileList extends Observable implements Serializable {
+public class FileList extends Observable {
 
 	/**
 	 * 

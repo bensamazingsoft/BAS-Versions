@@ -1,7 +1,7 @@
 package com.bas.versions.utils;
 
 import static com.bas.versions.utils.FileManager.changeFilePath;
-import static com.bas.versions.utils.FileManager.copyFile2VersionPath;
+import static com.bas.versions.utils.FileManager.copyFile2CheckPointPath;
 import static com.bas.versions.utils.FileManager.writeTxtFile;
 
 import java.io.File;
@@ -23,43 +23,43 @@ import javax.swing.SwingUtilities;
 import com.bas.versions.gui.BasPgBarUpdtePair;
 import com.bas.versions.gui.BasProgressBar;
 
-public class Version extends Observable implements Comparable<Version>, Serializable {
+public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1509582280653749478L;
-	private static int versionId = 1;
+	private static int chkptId = 1;
 	private int id;
 
 	private Date dateCreated = new Date();
 	private Set<File> projectFileList = new HashSet<>();
-	private Set<File> versionFileList = new HashSet<>();
+	private Set<File> chkptFileList = new HashSet<>();
 	private File[][] fileTab;
-	private Path versionPath;
+	private Path chkptPath;
 	private Path projectPath;
-	private String versionMsg = "";
+	private String chkptMsg = "";
 	private String formatId;
 	private BasProgressBar pgBar;
 
-	public Version() {
+	public CheckPoint() {
 		this.dateCreated = null;
-		this.versionPath = null;
-		this.id = versionId;
+		this.chkptPath = null;
+		this.id = chkptId;
 	}
 
-	public Version(Date date, Path projectPath, Set<File> fileModList, String msg) {
+	public CheckPoint(Date date, Path projectPath, Set<File> fileModList, String msg) {
 
-		this.id = versionId;
+		this.id = chkptId;
 		this.formatId = String.format("%04d", this.id);
 		this.dateCreated = date;
 		this.projectPath = projectPath;
-		this.versionPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-Versions" + "\\" + "Vers" + this.formatId + "["
+		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Vers" + this.formatId + "["
 				+ new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
-		this.versionMsg = msg;
+		this.chkptMsg = msg;
 		this.projectFileList = fileModList;
 		this.fileTab = new File[2][fileModList.size()];
-		this.versionFileList = createVersFileList(fileModList);
+		this.chkptFileList = mkChkptFileList(fileModList);
 
 	}
 
@@ -67,12 +67,12 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 	 * @param projectFileList
 	 * @return
 	 */
-	public HashSet<File> createVersFileList(Set<File> projectFileList) {
-		HashSet<File> versFileList = new HashSet<>();
+	public HashSet<File> mkChkptFileList(Set<File> projectFileList) {
+		HashSet<File> chkptFileList = new HashSet<>();
 
 		BasPgBarUpdtePair pair;
 
-		pgBar = new BasProgressBar("Indexing Version " + formatId + " files", projectFileList.size());
+		pgBar = new BasProgressBar("Indexing CheckPoint " + formatId + " files", projectFileList.size());
 		this.addObserver(pgBar);
 		pgBar.setVisible(true);
 
@@ -81,8 +81,8 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 		while (it.hasNext()) {
 
 			File file = it.next();
-			File newFile = changeFilePath(file, this.projectPath, this.versionPath);
-			versFileList.add(newFile);
+			File newFile = changeFilePath(file, this.projectPath, this.chkptPath);
+			chkptFileList.add(newFile);
 			this.fileTab[0][i] = file;
 			this.fileTab[1][i] = newFile;
 			pair = new BasPgBarUpdtePair("Indexed file : " + file.getName(), i + 1);
@@ -92,11 +92,11 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 		}
 		i = 0;
 		pgBar.dispose();
-		return versFileList;
+		return chkptFileList;
 	}
 
 	/**
-	 * writes Version files to disk
+	 * writes CheckPoint files to disk
 	 * 
 	 * @throws IOException
 	 */
@@ -105,14 +105,14 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 
 		BasPgBarUpdtePair pair;
 
-		pgBar = new BasProgressBar("Copying Files toVersion" + formatId, this.fileTab.length + 3);
+		pgBar = new BasProgressBar("Copying Files to Checkpoint" + formatId, this.fileTab.length + 3);
 		this.addObserver(pgBar);
 		pgBar.setVisible(true);
 
 		for (int i = 0; i < this.fileTab[0].length; i++) {
 			boolean success = false;
 			try {
-				success = copyFile2VersionPath(this.fileTab[0][i], this.fileTab[1][i]);
+				success = copyFile2CheckPointPath(this.fileTab[0][i], this.fileTab[1][i]);
 			} catch (IOException e) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -135,9 +135,9 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 			}
 		}
 		boolean success = false;
-		String title = "Version " + formatId + " Message";
+		String title = "CheckPoint " + formatId + " Message";
 		try {
-			success = writeTxtFile(versionMsg, title, versionPath);
+			success = writeTxtFile(chkptMsg, title, chkptPath);
 		} catch (IOException e) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
@@ -170,11 +170,11 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 	public String toString() {
 		this.formatId = String.format("%04d", this.id);
 
-		String msg = this.versionMsg;
-		if (this.versionMsg.length() > 31) {
-			msg = this.versionMsg.substring(0, 30) + "...";
+		String msg = this.chkptMsg;
+		if (this.chkptMsg.length() > 31) {
+			msg = this.chkptMsg.substring(0, 30) + "...";
 		}
-		String str = "Version " + formatId + "[" + msg + "]";
+		String str = "CheckPoint " + formatId + "[" + msg + "]";
 		return str;
 	}
 
@@ -189,8 +189,8 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 		int result = 1;
 		result = prime * result + ((dateCreated == null) ? 0 : dateCreated.hashCode());
 		result = prime * result + id;
-		result = prime * result + ((versionFileList == null) ? 0 : versionFileList.hashCode());
-		result = prime * result + ((versionMsg == null) ? 0 : versionMsg.hashCode());
+		result = prime * result + ((chkptFileList == null) ? 0 : chkptFileList.hashCode());
+		result = prime * result + ((chkptMsg == null) ? 0 : chkptMsg.hashCode());
 		return result;
 	}
 
@@ -207,7 +207,7 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Version other = (Version) obj;
+		CheckPoint other = (CheckPoint) obj;
 		if (dateCreated == null) {
 			if (other.dateCreated != null)
 				return false;
@@ -215,38 +215,38 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 			return false;
 		if (id != other.id)
 			return false;
-		if (versionFileList == null) {
-			if (other.versionFileList != null)
+		if (chkptFileList == null) {
+			if (other.chkptFileList != null)
 				return false;
-		} else if (!versionFileList.equals(other.versionFileList))
+		} else if (!chkptFileList.equals(other.chkptFileList))
 			return false;
-		if (versionMsg == null) {
-			if (other.versionMsg != null)
+		if (chkptMsg == null) {
+			if (other.chkptMsg != null)
 				return false;
-		} else if (!versionMsg.equals(other.versionMsg))
+		} else if (!chkptMsg.equals(other.chkptMsg))
 			return false;
 		return true;
 	}
 
 	@Override
-	public int compareTo(Version v) {
+	public int compareTo(CheckPoint v) {
 		return this.dateCreated.compareTo(v.dateCreated);
 	}
 
 	// {{{ getters and setters
 	/**
-	 * @return the versionId
+	 * @return the chkptId
 	 */
 	public static int getVersionId() {
-		return versionId;
+		return chkptId;
 	}
 
 	/**
-	 * @param versionId
-	 *            the versionId to set
+	 * @param chkptId
+	 *            the chkptId to set
 	 */
 	public static void setVersionId(int versionId) {
-		Version.versionId = versionId;
+		CheckPoint.chkptId = versionId;
 	}
 
 	@Override
@@ -350,15 +350,15 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 	}
 
 	/**
-	 * @return the versionFileList
+	 * @return the chkptFileList
 	 */
 	public Set<File> getVersionFileList() {
 		return projectFileList;
 	}
 
 	/**
-	 * @param versionFileList
-	 *            the versionFileList to set
+	 * @param chkptFileList
+	 *            the chkptFileList to set
 	 */
 	public void setVersionFileList(Set<File> versionFileList) {
 		this.projectFileList = versionFileList;
@@ -368,7 +368,7 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 	 * @return the versionFileModList
 	 */
 	public Set<File> getVersionFileModList() {
-		return versionFileList;
+		return chkptFileList;
 	}
 
 	/**
@@ -376,37 +376,37 @@ public class Version extends Observable implements Comparable<Version>, Serializ
 	 *            the versionFileModList to set
 	 */
 	public void setVersionFileModList(Set<File> versionFileModList) {
-		this.versionFileList = versionFileModList;
+		this.chkptFileList = versionFileModList;
 	}
 
 	/**
-	 * @return the versionPath
+	 * @return the chkptPath
 	 */
 	public Path getVersionPath() {
-		return versionPath;
+		return chkptPath;
 	}
 
 	/**
-	 * @param versionPath
-	 *            the versionPath to set
+	 * @param chkptPath
+	 *            the chkptPath to set
 	 */
 	public void setVersionPath(Path versionPath) {
-		this.versionPath = versionPath;
+		this.chkptPath = versionPath;
 	}
 
 	/**
-	 * @return the versionMsg
+	 * @return the chkptMsg
 	 */
 	public String getVersionMsg() {
-		return versionMsg;
+		return chkptMsg;
 	}
 
 	/**
-	 * @param versionMsg
-	 *            the versionMsg to set
+	 * @param chkptMsg
+	 *            the chkptMsg to set
 	 */
 	public void setVersionMsg(String versionMsg) {
-		this.versionMsg = versionMsg;
+		this.chkptMsg = versionMsg;
 	}
 
 	/**

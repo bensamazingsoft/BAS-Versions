@@ -17,7 +17,7 @@ import javax.swing.SwingUtilities;
 public class FileManager {
 
 	/**
-	 * returns file with the Version path
+	 * returns file with the CheckPoint path
 	 * 
 	 * @param file
 	 * @param originePath
@@ -28,14 +28,14 @@ public class FileManager {
 
 		String filePth = file.getAbsolutePath();
 		String projectPth = originePath.toFile().getAbsolutePath();
-		String versionPth = DestinationPath.toFile().getAbsolutePath() + "\\";
-		File newFile = new File(filePth.replace(projectPth, versionPth));
+		String chkptPth = DestinationPath.toFile().getAbsolutePath() + "\\";
+		File newFile = new File(filePth.replace(projectPth, chkptPth));
 
 		return newFile;
 	}
 
 	/**
-	 * write files in the Version folder
+	 * write files in the CheckPoint folder
 	 * 
 	 * @param file
 	 * @param fileDest
@@ -43,7 +43,7 @@ public class FileManager {
 	 * @return boolean
 	 * @throws IOException
 	 */
-	public static boolean copyFile2VersionPath(File file, File fileDest) throws IOException {
+	public static boolean copyFile2CheckPointPath(File file, File fileDest) throws IOException {
 
 		boolean success;
 		Path filePth = file.toPath();
@@ -125,6 +125,20 @@ public class FileManager {
 			});
 		}
 	}
+	
+	/**
+	 * @param file
+	 * @param dirPath
+	 * @return
+	 */
+	public static String getRelativeFileName(File file, Path dirPath){
+		
+		String str;		
+		str = file.getAbsolutePath().replace(dirPath.toFile().getAbsolutePath(), "");
+		
+		return str;
+	}
+	
 	
 	public FileManager() {
 

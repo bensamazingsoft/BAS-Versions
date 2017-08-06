@@ -1,18 +1,18 @@
 package com.bas.versions.gui;
 
-import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import javax.swing.JLabel;
-import java.awt.Font;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+
 import javax.swing.JButton;
-import javax.swing.border.TitledBorder;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import java.awt.Dimension;
 import javax.swing.border.EtchedBorder;
-import java.awt.Color;
-import javax.swing.JTree;
+import javax.swing.border.TitledBorder;
 
 public class MainPnl extends JPanel {
 	/**
@@ -24,7 +24,7 @@ public class MainPnl extends JPanel {
 	JTextPane textPane = new JTextPane();
 	JButton loadBut = new JButton("Load");
 	JButton newBut = new JButton("New");
-	JButton createVersBut = new JButton("Commit new Version");
+	JButton createChkptBut = new JButton("Commit new CheckPoint");
 	JLabel projectDirLbl = new JLabel("New label");
 
 	/**
@@ -122,12 +122,12 @@ public class MainPnl extends JPanel {
 		panel_8.add(panel_9, BorderLayout.EAST);
 		
 		
-		panel_9.add(createVersBut);
+		panel_9.add(createChkptBut);
 		
 		JPanel panel_10 = new JPanel();
 		panel_8.add(panel_10, BorderLayout.CENTER);
 		
-		JLabel lblNewLabel_1 = new JLabel("Version Message :");
+		JLabel lblNewLabel_1 = new JLabel("CheckPoint Message :");
 		panel_10.add(lblNewLabel_1);
 		
 		
