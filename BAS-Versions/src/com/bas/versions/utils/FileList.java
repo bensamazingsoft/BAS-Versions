@@ -88,7 +88,7 @@ public class FileList extends Observable {
 			regexIn += "(" + str + ")" + "|";
 		}
 		regexIn = regexIn.substring(0, regexIn.lastIndexOf("|"));
-		Pattern pattIn = Pattern.compile(regexIn);
+		Pattern pattIn = Pattern.compile(regexIn, Pattern.CASE_INSENSITIVE);
 
 		String[] outTab = filterOut.split(",");
 		String regexOut = "";
@@ -96,7 +96,7 @@ public class FileList extends Observable {
 			regexOut += "(" + str + ")" + "|";
 		}
 		regexOut = regexOut.substring(0, regexOut.lastIndexOf("|"));
-		Pattern pattOut = Pattern.compile(regexOut);
+		Pattern pattOut = Pattern.compile(regexOut, Pattern.CASE_INSENSITIVE);
 
 		String pathName = projectPath.toFile().getAbsolutePath();
 
@@ -135,7 +135,7 @@ public class FileList extends Observable {
 	public FileList(Set<File> listFilteredFile, Date dateCreated) {
 		for (File file : listFilteredFile) {
 			Date fileDate = new Date(file.lastModified());
-			if (fileDate.compareTo(dateCreated) < 0) {
+			if (fileDate.compareTo(dateCreated) > 0) {
 
 				result.add(file);
 			}

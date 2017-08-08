@@ -6,7 +6,6 @@ import static com.bas.versions.utils.FileManager.writeTxtFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -46,6 +45,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		this.dateCreated = null;
 		this.chkptPath = null;
 		this.id = chkptId;
+		chkptId++;
 	}
 
 	public CheckPoint(Date date, Path projectPath, Set<File> fileModList, String msg) {
@@ -54,12 +54,13 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		this.formatId = String.format("%04d", this.id);
 		this.dateCreated = date;
 		this.projectPath = projectPath;
-		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Vers" + this.formatId + "["
+		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint" + this.formatId + "["
 				+ new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
 		this.chkptMsg = msg;
 		this.projectFileList = fileModList;
 		this.fileTab = new File[2][fileModList.size()];
 		this.chkptFileList = mkChkptFileList(fileModList);
+		chkptId++;
 
 	}
 
@@ -102,10 +103,13 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 */
 	@SuppressWarnings("static-access")
 	public void writeFiles() {
+		
+		File newFolder = this.chkptPath.toFile();
+		newFolder.mkdirs();
 
 		BasPgBarUpdtePair pair;
 
-		pgBar = new BasProgressBar("Copying Files to Checkpoint" + formatId, this.fileTab.length + 3);
+		pgBar = new BasProgressBar("Copying Files to Checkpoint" + formatId, this.fileTab[0].length + 3);
 		this.addObserver(pgBar);
 		pgBar.setVisible(true);
 

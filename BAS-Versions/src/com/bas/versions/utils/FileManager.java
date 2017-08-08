@@ -104,7 +104,7 @@ public class FileManager {
 		} catch (IOException e) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					JOptionPane.showMessageDialog(null, "Can't read file", "Error", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Can't write file", "Error", JOptionPane.ERROR_MESSAGE);
 					
 				}
 			});

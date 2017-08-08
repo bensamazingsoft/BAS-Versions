@@ -1,6 +1,6 @@
 package com.bas.versions.gui;
 
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Set;
@@ -13,12 +13,21 @@ import javax.swing.tree.TreeModel;
 
 public class BasJTree extends JPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2096094195155925324L;
 	DefaultMutableTreeNode root;
 	JTree tree;
 	JScrollPane jsp;
 	String fileNames = "";
+	boolean stop = false;
+	boolean subFound = false;
+	int j;
 
 	public BasJTree(Path projectPath) {
+		
+		this.setLayout(new BorderLayout(0, 0));
 
 		root = new DefaultMutableTreeNode(projectPath.toFile().getName());
 
@@ -30,12 +39,14 @@ public class BasJTree extends JPanel {
 
 		tree = new JTree(root);
 		jsp = new JScrollPane(tree);
-		jsp.setPreferredSize(new Dimension(280, 250));
-		this.add(jsp);
+//		jsp.setPreferredSize(jsp.getParent().getSize());
+		this.add(jsp, BorderLayout.CENTER);
 
 	}
 
 	public BasJTree(Path projectPath, Set<File> fileSet2keep) {
+		
+		this.setLayout(new BorderLayout(0, 0));
 
 		for (File file : fileSet2keep) {
 			fileNames += file.getAbsolutePath();
@@ -55,16 +66,17 @@ public class BasJTree extends JPanel {
 
 		DefaultMutableTreeNode modelRoot = (DefaultMutableTreeNode) model.getRoot();
 
-		for (int j = 0; j < modelRoot.getChildCount(); j++) {
-
+		while (stop == false && modelRoot.getChildCount() != 0) {
+			j = 0;
+			stop = true;
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) modelRoot.getChildAt(j);
 			filterNode(node);
 		}
 
 		tree = new JTree(model);
 		jsp = new JScrollPane(tree);
-		jsp.setPreferredSize(new Dimension(280, 250));
-		this.add(jsp);
+//		jsp.setPreferredSize(jsp.getParent().getSize());
+		this.add(jsp, BorderLayout.CENTER);
 	}
 
 	private DefaultMutableTreeNode listFile(File file, DefaultMutableTreeNode node) {
@@ -97,10 +109,9 @@ public class BasJTree extends JPanel {
 
 		if (!fileNames.contains(node.toString())) {
 			node.removeFromParent();
+			stop = false;
 		}
-		System.out.println(node.toString());
-		System.out.println(node.getClass());
-
+		
 		DefaultMutableTreeNode[] nodeTab = new DefaultMutableTreeNode[node.getChildCount()];
 
 		for (int n = 0; n < node.getChildCount(); n++) {
@@ -112,9 +123,9 @@ public class BasJTree extends JPanel {
 			if (subNode.isLeaf()) {
 				if (!fileNames.contains(subNode.toString())) {
 					subNode.removeFromParent();
+					stop = false;
 				}
-				System.out.println(subNode.toString());
-				System.out.println(subNode.getClass());
+
 			} else {
 
 				filterNode(subNode);
@@ -122,5 +133,6 @@ public class BasJTree extends JPanel {
 			}
 
 		}
+		j++;
 	}
 }
