@@ -24,10 +24,6 @@ import com.bas.versions.gui.BasProgressBar;
 
 public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1509582280653749478L;
 	private static int chkptId = 1;
 	private int id;
 
@@ -54,8 +50,8 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		this.formatId = String.format("%04d", this.id);
 		this.dateCreated = date;
 		this.projectPath = projectPath;
-		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint" + this.formatId + "["
-				+ new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
+		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint"
+				+ this.formatId + "[" + new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
 		this.chkptMsg = msg;
 		this.projectFileList = fileModList;
 		this.fileTab = new File[2][fileModList.size()];
@@ -103,7 +99,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 */
 	@SuppressWarnings("static-access")
 	public void writeFiles() {
-		
+
 		File newFolder = this.chkptPath.toFile();
 		newFolder.mkdirs();
 

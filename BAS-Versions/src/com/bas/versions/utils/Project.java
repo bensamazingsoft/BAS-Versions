@@ -51,13 +51,13 @@ public class Project extends Observable {
 		this.id = projectId;
 		this.dateCreated = new Date();
 		this.filterIn = ".aep,.prpj,.psd,.ai,.txt,.srt";
-		this.filterOut = "rush,rush,source,sources,BAS-CheckPoints";
+		this.filterOut = "";
 		this.chkptMsg = "New project : " + projectPath.toFile().getName();
 		this.projectPath = projectPath;
 		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
 		this.checkpointStack = new LinkedList<>();
 		this.fileSet = new FileList(this.projectPath).getResult();
-		this.filteredFileSet = new FileList(this.fileSet, this.filterIn, this.filterOut, this.projectPath).getResult();
+		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut , this.projectPath).getResult();
 		this.modFileSet = this.filteredFileSet;
 		setChanged();
 		notifyObservers();
@@ -80,7 +80,7 @@ public class Project extends Observable {
 	public void updateSets(){	
 		
 		this.fileSet = new FileList(this.projectPath).getResult();
-		this.filteredFileSet = new FileList(this.fileSet, this.filterIn, this.filterOut, this.projectPath).getResult();
+		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut, this.projectPath).getResult();
 		if (this.getCheckPointStack().peekLast() == null) {
 			this.modFileSet = this.filteredFileSet;
 		} else {

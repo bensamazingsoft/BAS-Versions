@@ -2,7 +2,6 @@ package com.bas.versions.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,10 +22,6 @@ import com.bas.versions.gui.BasProgressBar;
 
 public class FileList extends Observable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6506396396042025276L;
 	private Set<File> result = new HashSet<>();
 	private BasProgressBar pgBar;
 	private BasPgBarUpdtePair pair;
@@ -37,7 +32,7 @@ public class FileList extends Observable {
 	 * @param projectPath
 	 */
 	public FileList(Path projectPath) {
-		
+
 		result = new HashSet<>();
 
 		try {
