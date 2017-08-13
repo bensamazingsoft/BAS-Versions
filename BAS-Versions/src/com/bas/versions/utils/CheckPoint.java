@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,8 +20,13 @@ import java.util.Set;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import com.bas.versions.gui.BasPgBarUpdtePair;
 import com.bas.versions.gui.BasProgressBar;
+import com.bas.versions.xml.XmlWriter;
 
 public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 
@@ -28,7 +34,6 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	private int id;
 
 	private Date dateCreated = new Date();
-	private Set<File> projectFileList = new HashSet<>();
 	private Set<File> chkptFileList = new HashSet<>();
 	private File[][] fileTab;
 	private Path chkptPath;
@@ -44,20 +49,45 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		chkptId++;
 	}
 
-	public CheckPoint(Date date, Path projectPath, Set<File> fileModList, String msg) {
+	public CheckPoint(Date date, Path projectPath, Set<File> fileList, String msg) {
 
 		this.id = chkptId;
 		this.formatId = String.format("%04d", this.id);
 		this.dateCreated = date;
 		this.projectPath = projectPath;
 		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint"
-				+ this.formatId + "[" + new SimpleDateFormat("yyy-MM-dd_HH-mm").format(dateCreated) + "]");
+				+ this.formatId + "[" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(dateCreated) + "]");
 		this.chkptMsg = msg;
-		this.projectFileList = fileModList;
-		this.fileTab = new File[2][fileModList.size()];
-		this.chkptFileList = mkChkptFileList(fileModList);
+		this.fileTab = new File[2][fileList.size()];
+		this.chkptFileList = mkChkptFileList(fileList);
 		chkptId++;
 
+	}
+
+	public CheckPoint(Document doc){
+		
+		Element rootElt = doc.getDocumentElement();
+		this.id = Integer.valueOf(rootElt.getAttribute("id"));
+		this.formatId = String.format("%04d", this.id);
+		try {
+			this.dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:'00'").parse(rootElt.getAttribute("date"));
+		} catch (ParseException e) {
+			JOptionPane.showMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+		this.projectPath = Paths.get(rootElt.getAttribute("projectPath"));
+		this.chkptPath = Paths.get(rootElt.getAttribute("checkpointPath"));
+		
+		NodeList msgList = doc.getElementsByTagName("message");
+		this.chkptMsg = msgList.item(0).getTextContent();
+		
+		NodeList fileList = doc.getElementsByTagName("file");
+		int nbFile = fileList.getLength();
+		for (int i = 0; i<nbFile; i++){
+			this.chkptFileList.add(new File(fileList.item(i).getTextContent()));
+		}
+
+	
 	}
 
 	/**
@@ -159,8 +189,23 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 			notifyObservers(pair);
 		}
 		pgBar.dispose();
+		
+		XmlWriter xmlWrt = new XmlWriter();
+		xmlWrt.writeChckPtXml(this);
 	}
 
+	/**
+	 * checks if Checkpoint files are on disk
+	 * @return true if they are
+	 */
+	public boolean checkFiles(){	
+		boolean ok = true;
+		for (File file : chkptFileList){		
+			ok=(file.exists()) ? true : false;
+		}
+			return ok;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -350,24 +395,9 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	}
 
 	/**
-	 * @return the chkptFileList
-	 */
-	public Set<File> getVersionFileList() {
-		return projectFileList;
-	}
-
-	/**
-	 * @param chkptFileList
-	 *            the chkptFileList to set
-	 */
-	public void setVersionFileList(Set<File> versionFileList) {
-		this.projectFileList = versionFileList;
-	}
-
-	/**
 	 * @return the versionFileModList
 	 */
-	public Set<File> getVersionFileModList() {
+	public Set<File> getChckPtFileList() {
 		return chkptFileList;
 	}
 
@@ -382,7 +412,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	/**
 	 * @return the chkptPath
 	 */
-	public Path getVersionPath() {
+	public Path getChckPtPath() {
 		return chkptPath;
 	}
 
@@ -397,7 +427,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	/**
 	 * @return the chkptMsg
 	 */
-	public String getVersionMsg() {
+	public String getChkPtMsg() {
 		return chkptMsg;
 	}
 

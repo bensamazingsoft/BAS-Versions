@@ -1,9 +1,12 @@
+import java.io.File;
+
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import com.bas.versions.gui.MainPnl;
+import com.bas.versions.utils.CheckPoint;
+import com.bas.versions.xml.CheckPointParser;
 
 public class Main {
 
@@ -11,12 +14,20 @@ public class Main {
 	public static void main(String[] args) {
 
 
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				makeFrame();
-			}
-		});
+		CheckPoint cp = new CheckPoint(new CheckPointParser(new File("E:\\projet\\BAS-CheckPoints\\Checkpoint0001[2017-08-13_19-04]\\frefre.xml")).getDoc());
+		
+		System.out.println(cp.toString());
+		System.out.println(cp.getChckPtFileList().toString());
+		
+		
 
+
+//		SwingUtilities.invokeLater(new Runnable() {
+//			public void run() {
+//				makeFrame();
+//			}
+//		});
+//
 	}
 
 	

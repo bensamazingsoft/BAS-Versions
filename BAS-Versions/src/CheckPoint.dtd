@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT checkpoint (message,files)>
+<!ATTLIST checkpoint id CDATA #REQUIRED>
+<!ATTLIST checkpoint date CDATA #REQUIRED>
+<!ATTLIST checkpoint projectPath CDATA #REQUIRED>
+<!ATTLIST checkpoint checkpointPath CDATA #REQUIRED>
+
+<!ELEMENT message (#PCDATA)>
+<!ELEMENT files (file)+>
+<!ELEMENT file (#PCDATA)>

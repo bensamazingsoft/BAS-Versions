@@ -3,16 +3,13 @@ package com.bas.versions.gui;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Enumeration;
 import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 
 public class BasJTree extends JPanel {
 

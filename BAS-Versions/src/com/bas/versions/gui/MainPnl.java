@@ -26,13 +26,13 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 
 import com.bas.versions.utils.Project;
-import javax.swing.border.CompoundBorder;
-import javax.swing.UIManager;
 
 public class MainPnl extends JPanel implements Observer {
 	/**
@@ -236,12 +236,12 @@ public class MainPnl extends JPanel implements Observer {
 		panel_4.add(split2);
 		center.add(panel_4, BorderLayout.CENTER);
 
-		JPanel panel_8 = new JPanel();
-		add(panel_8, BorderLayout.SOUTH);
-		panel_8.setLayout(new BorderLayout(0, 0));
+		JPanel south = new JPanel();
+		add(south, BorderLayout.SOUTH);
+		south.setLayout(new BorderLayout(0, 0));
 
-		JPanel panel_9 = new JPanel();
-		panel_8.add(panel_9, BorderLayout.EAST);
+		JPanel commitButtPnl = new JPanel();
+		south.add(commitButtPnl, BorderLayout.EAST);
 		createChkptBut.setToolTipText("create a new checkpoint in the project");
 		createChkptBut.setMnemonic('c');
 		createChkptBut.setEnabled(false);
@@ -252,16 +252,16 @@ public class MainPnl extends JPanel implements Observer {
 			}
 		});
 
-		panel_9.add(createChkptBut);
+		commitButtPnl.add(createChkptBut);
 
-		JPanel panel_10 = new JPanel();
-		FlowLayout flowLayout_4 = (FlowLayout) panel_10.getLayout();
-		flowLayout_4.setAlignment(FlowLayout.RIGHT);
-		panel_8.add(panel_10, BorderLayout.CENTER);
+		JPanel msgPnl = new JPanel();
+		FlowLayout fl_msgPnl = (FlowLayout) msgPnl.getLayout();
+		fl_msgPnl.setAlignment(FlowLayout.RIGHT);
+		south.add(msgPnl, BorderLayout.CENTER);
 
-		JLabel lblNewLabel_1 = new JLabel("CheckPoint Message :");
-		lblNewLabel_1.setVerticalAlignment(SwingConstants.TOP);
-		panel_10.add(lblNewLabel_1);
+		JLabel msgPnlLbl = new JLabel("CheckPoint Message :");
+		msgPnlLbl.setVerticalAlignment(SwingConstants.TOP);
+		msgPnl.add(msgPnlLbl);
 		msgTp.setToolTipText("Set message of the next checkpoint.");
 		msgTp.addFocusListener(new FocusAdapter() {
 			@Override
@@ -280,7 +280,7 @@ public class MainPnl extends JPanel implements Observer {
 		});
 		msgTp.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		msgTp.setPreferredSize(new Dimension(300, 45));
-		panel_10.add(msgTp);
+		msgPnl.add(msgTp);
 
 	}
 

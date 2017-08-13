@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<checkpoint xsd:noNamespaceSchemaLocation="CheckPoint.xsd"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" 
+	id="0" date="2017-11-02T22:45:00" projectPath="e:\projet\" checkpointPath="e:\projet\Bas-CheckPoints\">
+	<message>Salut les musclés</message>
+	<files>
+		<file>E:\projet\Bas-CheckPoints\Nouveau.txt</file>
+	</files>
+</checkpoint>
