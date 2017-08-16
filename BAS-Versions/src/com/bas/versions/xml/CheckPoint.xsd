@@ -12,7 +12,7 @@
 	<xs:element name="files">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="file" type="xs:string" minOccurs="1"
+				<xs:element name="file" type="xs:string" minOccurs="0"
 					maxOccurs="unbounded"></xs:element>
 			</xs:sequence>
 		</xs:complexType>

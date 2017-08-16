@@ -31,8 +31,10 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.bas.versions.utils.Project;
+import com.bas.versions.xml.ProjectParser;
 
 public class MainPnl extends JPanel implements Observer {
 	/**
@@ -55,7 +57,8 @@ public class MainPnl extends JPanel implements Observer {
 	JPanel panel4FilteredFiles = new JPanel();
 	JPanel panel4ModFiles = new JPanel();
 	JLabel lastChkptLbl = new JLabel("");
-	JFileChooser load = new JFileChooser();
+	JFileChooser newJfc = new JFileChooser();
+	JFileChooser loadJfc = new JFileChooser();
 	JLabel chkptDateLbl = new JLabel("");
 	JLabel lblNewLabel_2 = new JLabel("");
 	JLabel lblNewLabel_4 = new JLabel("");
@@ -122,7 +125,16 @@ public class MainPnl extends JPanel implements Observer {
 		flowLayout_1.setAlignment(FlowLayout.RIGHT);
 		north.add(panel, BorderLayout.EAST);
 
-		load.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		newJfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		loadJfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		loadJfc.setFileFilter(new FileNameExtensionFilter("*.basv filter", "basv"));
+		
+		
+		loadBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				loadProject();
+			}
+		});
 		loadBut.setToolTipText("load project file");
 		loadBut.setMnemonic('o');
 
@@ -131,7 +143,7 @@ public class MainPnl extends JPanel implements Observer {
 		newBut.setMnemonic('n');
 		newBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				chooseload();
+				chooseNew();
 			}
 		});
 
@@ -321,15 +333,15 @@ public class MainPnl extends JPanel implements Observer {
 
 	}
 
-	protected void chooseload() {
-		final int result = load.showOpenDialog(getParent());
+	protected void chooseNew() {
+		final int result = newJfc.showOpenDialog(getParent());
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				if (result == JFileChooser.APPROVE_OPTION) {
 
-					initPanel(new Project(Paths.get(load.getSelectedFile().getAbsolutePath())));
+					initPanel(new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath())));
 					MainPnl.this.project.addObserver(MainPnl.this);
 					btnNewButton.setEnabled(true);
 
@@ -339,6 +351,26 @@ public class MainPnl extends JPanel implements Observer {
 
 	}
 
+
+	protected void loadProject() {
+		
+		final int result = loadJfc.showOpenDialog(getParent());
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (result == JFileChooser.APPROVE_OPTION) {
+					
+					initPanel(new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc()));
+					MainPnl.this.project.addObserver(MainPnl.this);
+					btnNewButton.setEnabled(true);
+					
+				} 
+			}
+		}).start();
+		
+	}
+	
 	public void initPanel(Project project) {
 
 		this.project = project;
@@ -362,8 +394,8 @@ public class MainPnl extends JPanel implements Observer {
 						MainPnl.this.project.getListFilteredFile()));
 				MainPnl.this.panel4ModFiles.add(
 						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
-				if (MainPnl.this.project.getCheckPointStack().peek() != null) {
-					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peek().toString());
+				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
+					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString());
 				}
 				createChkptBut.setEnabled(true);
 				revalidate();
