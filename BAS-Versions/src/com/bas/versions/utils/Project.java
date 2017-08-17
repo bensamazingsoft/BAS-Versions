@@ -45,6 +45,7 @@ public class Project extends Observable {
 	private Set<File> fileSet;
 	private Set<File> modFileSet;
 	private Set<File> filteredFileSet;
+	private Boolean filter = true;
 
 	public Project() {
 
@@ -74,6 +75,7 @@ public class Project extends Observable {
 		this.chkptMsg = "New project : " + projectPath.toFile().getName();
 		this.projectPath = projectPath;
 		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		this.workPath.toFile().mkdirs();
 		this.checkpointStack = new LinkedList<>();
 		this.fileSet = new FileList(this.projectPath).getResult();
 		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut,
@@ -163,8 +165,13 @@ public class Project extends Observable {
 	public void updateSets() {
 
 		this.fileSet = new FileList(this.projectPath).getResult();
+		if (this.filter){
 		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut,
 				this.projectPath).getResult();
+		} else {
+			this.filteredFileSet = new FileList(this.fileSet, "*", "BAS-CheckPoints," + this.filterOut,
+				this.projectPath).getResult();
+		}
 		if (this.getCheckPointStack().peekLast() == null) {
 			this.modFileSet = this.filteredFileSet;
 		} else {
@@ -345,6 +352,20 @@ public class Project extends Observable {
 	 */
 	public void setVersMsg(String versMsg) {
 		this.chkptMsg = versMsg;
+	}
+
+	/**
+	 * @return the filter
+	 */
+	public Boolean getFilter() {
+		return filter;
+	}
+
+	/**
+	 * @param filter the filter to set
+	 */
+	public void setFilter(Boolean filter) {
+		this.filter = filter;
 	}
 
 	// }}}

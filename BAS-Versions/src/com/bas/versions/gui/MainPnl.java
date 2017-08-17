@@ -11,12 +11,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -31,8 +33,11 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import com.bas.versions.utils.BasProperties;
 import com.bas.versions.utils.Project;
 import com.bas.versions.xml.ProjectParser;
 
@@ -50,7 +55,7 @@ public class MainPnl extends JPanel implements Observer {
 	JButton loadBut = new JButton("Load");
 	JButton newBut = new JButton("New");
 	JButton createChkptBut = new JButton("Commit new CheckPoint");
-	JButton btnNewButton = new JButton("update");
+	JButton updateBut = new JButton("update");
 	JLabel projectDirLbl = new JLabel("");
 	JLabel projectLbl = new JLabel("");
 	JPanel panel4Files = new JPanel();
@@ -60,24 +65,38 @@ public class MainPnl extends JPanel implements Observer {
 	JFileChooser newJfc = new JFileChooser();
 	JFileChooser loadJfc = new JFileChooser();
 	JLabel chkptDateLbl = new JLabel("");
-	JLabel lblNewLabel_2 = new JLabel("");
-	JLabel lblNewLabel_4 = new JLabel("");
+	JLabel lastChkptIndicLbl = new JLabel("");
+	JLabel chkptDateIndicLbl = new JLabel("");
 	private final JPanel panel_1 = new JPanel();
 	private final JPanel panel_2 = new JPanel();
 	private final JPanel panel_5 = new JPanel();
 	private final JPanel panel_6 = new JPanel();
 	private final JPanel panel_7 = new JPanel();
-
+	private final JCheckBox noFilterCb = new JCheckBox("No filters");
+	Boolean filter = true;
+	BasProperties config;
+	
 	/**
 	 * Create the panel.
 	 */
 	public MainPnl() {
+		
+		config = new BasProperties();
+		
+		File confFile = new File("config.properties");
+		if (confFile.exists()){
+			config.loadProperties(confFile);
+			loadJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
+			newJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
+		}
 
 		setPreferredSize(new Dimension(900, 500));
 		setLayout(new BorderLayout(0, 0));
 
 		JPanel north = new JPanel();
-		north.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "<html><Strong> <font size=\"4\">project</font> </Strong></html>", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		north.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
+				"<html><Strong> <font size=\"4\">project</font> </Strong></html>", TitledBorder.LEADING,
+				TitledBorder.TOP, null, new Color(0, 0, 0)));
 		add(north, BorderLayout.NORTH);
 		north.setLayout(new BorderLayout(5, 5));
 
@@ -107,7 +126,8 @@ public class MainPnl extends JPanel implements Observer {
 		flowLayout.setAlignment(FlowLayout.LEFT);
 		panel_6.add(panel_1);
 		panel_1.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel_1.add(lblNewLabel_2);
+		panel_1.add(lastChkptIndicLbl);
+		lastChkptLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		panel_1.add(lastChkptLbl);
 		lastChkptLbl.setFont(new Font("Tahoma", Font.BOLD, 11));
 		FlowLayout flowLayout_2 = (FlowLayout) panel_2.getLayout();
@@ -116,7 +136,8 @@ public class MainPnl extends JPanel implements Observer {
 		flowLayout_2.setVgap(0);
 		panel_6.add(panel_2);
 		panel_2.setAlignmentX(Component.LEFT_ALIGNMENT);
-		panel_2.add(lblNewLabel_4);
+		panel_2.add(chkptDateIndicLbl);
+		chkptDateLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		panel_2.add(chkptDateLbl);
 
 		JPanel panel = new JPanel();
@@ -128,8 +149,7 @@ public class MainPnl extends JPanel implements Observer {
 		newJfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		loadJfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		loadJfc.setFileFilter(new FileNameExtensionFilter("*.basv filter", "basv"));
-		
-		
+
 		loadBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				loadProject();
@@ -150,7 +170,9 @@ public class MainPnl extends JPanel implements Observer {
 		panel.add(newBut);
 
 		JPanel center = new JPanel();
-		center.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "<html><Strong> <font size=\"4\">files</font> </Strong></html>", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		center.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
+				"<html><Strong> <font size=\"4\">files</font> </Strong></html>", TitledBorder.LEADING, TitledBorder.TOP,
+				null, new Color(0, 0, 0)));
 		add(center, BorderLayout.CENTER);
 		center.setLayout(new BorderLayout(0, 0));
 
@@ -205,16 +227,40 @@ public class MainPnl extends JPanel implements Observer {
 		});
 		panel_3.add(filterOutTf);
 		filterOutTf.setColumns(25);
-		btnNewButton.setToolTipText("<html><p>Update file lists according to filters</p>\r\n</br>\r\n<p> Filter IN sets wich files to include in checkpoint</p>\r\n<p>Filter Out sets wich files to exclude of checkpoint</p>\r\n</br>\r\n<p>Filters are Case Insensitive</p>\r\n");
-		btnNewButton.setMnemonic('u');
-		btnNewButton.addActionListener(new ActionListener() {
+		updateBut.setToolTipText(
+				"<html><p>Update file lists according to filters</p>\r\n</br>\r\n<p> Filter IN sets wich files to include in checkpoint</p>\r\n<p>Filter Out sets wich files to exclude of checkpoint</p>\r\n</br>\r\n<p>Filters are Case Insensitive</p>\r\n");
+		updateBut.setMnemonic('u');
+		updateBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				updateButAction();
 			}
 		});
 
-		btnNewButton.setEnabled(false);
-		panel_3.add(btnNewButton);
+		updateBut.setEnabled(false);
+		panel_3.add(updateBut);
+		
+		noFilterCb.setEnabled(false);
+		noFilterCb.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent arg0) {
+				filter = (!noFilterCb.isSelected());
+				MainPnl.this.project.setFilter(filter);
+				MainPnl.this.project.updateSets();
+				MainPnl.this.update(null,null);
+				if (noFilterCb.isSelected()){
+					MainPnl.this.filterInTf.setText("filtering disabled");
+					MainPnl.this.filterInTf.setEnabled(false);
+					MainPnl.this.filterOutTf.setEnabled(false);
+				}
+				if (!noFilterCb.isSelected()){
+//					MainPnl.this.filterInTf.setText("");
+					MainPnl.this.filterInTf.setEnabled(true);
+					MainPnl.this.filterOutTf.setEnabled(true);
+				}
+			}
+		});
+		noFilterCb.setToolTipText("Disable filtering");
+		
+		panel_3.add(noFilterCb);
 
 		panel4Files.setPreferredSize(new Dimension(300, 300));
 		panel4Files.setBorder(new TitledBorder(new CompoundBorder(null, UIManager.getBorder("CheckBoxMenuItem.border")),
@@ -280,12 +326,13 @@ public class MainPnl extends JPanel implements Observer {
 			public void focusLost(FocusEvent e) {
 				msgTp.setText(msgTp.getText().replaceAll("\"", "'"));
 			}
+
 			@Override
 			public void focusGained(FocusEvent arg0) {
-				if (msgTp.getText().equals("Please insert message")){
+				if (msgTp.getText().equals("Please insert message")) {
 					msgTp.setText("");
 				}
-				if (msgTp.getText().length() == 0){
+				if (msgTp.getText().length() == 0) {
 					msgTp.setCaretPosition(0);
 				}
 			}
@@ -323,8 +370,9 @@ public class MainPnl extends JPanel implements Observer {
 				if (info == JOptionPane.OK_OPTION) {
 					MainPnl.this.project.setVersMsg(MainPnl.this.msgTp.getText());
 					MainPnl.this.project.commitCheckPoint();
-					MainPnl.this.lblNewLabel_2.setText("Last checkpoint : ");
-					MainPnl.this.lblNewLabel_4.setText("created : ");
+					MainPnl.this.lastChkptIndicLbl.setText("Last checkpoint :");
+					MainPnl.this.chkptDateIndicLbl.setText("created : ");
+					MainPnl.this.msgTp.setText("");
 				} else {
 					MainPnl.this.msgTp.setText("Please insert message");
 				}
@@ -343,7 +391,10 @@ public class MainPnl extends JPanel implements Observer {
 
 					initPanel(new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath())));
 					MainPnl.this.project.addObserver(MainPnl.this);
-					btnNewButton.setEnabled(true);
+					updateBut.setEnabled(true);
+					MainPnl.this.update(null, null);
+					MainPnl.this.config.getProp().setProperty("lastPath", MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+					MainPnl.this.config.updateConf();
 
 				}
 			}
@@ -351,26 +402,27 @@ public class MainPnl extends JPanel implements Observer {
 
 	}
 
-
 	protected void loadProject() {
-		
+
 		final int result = loadJfc.showOpenDialog(getParent());
-		
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				if (result == JFileChooser.APPROVE_OPTION) {
-					
+
 					initPanel(new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc()));
 					MainPnl.this.project.addObserver(MainPnl.this);
-					btnNewButton.setEnabled(true);
-					
-				} 
+					updateBut.setEnabled(true);
+					MainPnl.this.config.getProp().setProperty("lastPath", MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+					MainPnl.this.config.updateConf();
+					MainPnl.this.update(null, null);
+				}
 			}
 		}).start();
-		
+
 	}
-	
+
 	public void initPanel(Project project) {
 
 		this.project = project;
@@ -379,8 +431,8 @@ public class MainPnl extends JPanel implements Observer {
 				MainPnl.this.projectLbl.setText("/" + MainPnl.this.project.getProjectPath().toFile().getName() + "/");
 				MainPnl.this.projectDirLbl.setText("Created : " + MainPnl.this.project.getDateCreated());
 				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					MainPnl.this.lblNewLabel_2.setText("Last checkpoint : ");
-					MainPnl.this.lblNewLabel_4.setText("created : ");
+					MainPnl.this.lastChkptIndicLbl.setText("Last checkpoint :");
+					MainPnl.this.chkptDateIndicLbl.setText("created : ");
 				}
 				MainPnl.this.filterInTf.setText(MainPnl.this.project.getFilterIn());
 				MainPnl.this.filterOutTf.setText(MainPnl.this.project.getFilterOut());
@@ -389,15 +441,19 @@ public class MainPnl extends JPanel implements Observer {
 		this.project.updateSets();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
+				MainPnl.this.panel4Files
+						.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
 				MainPnl.this.panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
 						MainPnl.this.project.getListFilteredFile()));
 				MainPnl.this.panel4ModFiles.add(
 						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
 				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString());
+					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
+					MainPnl.this.chkptDateLbl
+							.setText(MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
 				createChkptBut.setEnabled(true);
+				noFilterCb.setEnabled(true);
 				revalidate();
 				repaint();
 			}
@@ -417,15 +473,16 @@ public class MainPnl extends JPanel implements Observer {
 				MainPnl.this.panel4Files.removeAll();
 				MainPnl.this.panel4FilteredFiles.removeAll();
 				MainPnl.this.panel4ModFiles.removeAll();
-				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
+				MainPnl.this.panel4Files
+						.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
 				MainPnl.this.panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
 						MainPnl.this.project.getListFilteredFile()));
 				MainPnl.this.panel4ModFiles.add(
 						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
 				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString());
+					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
 					MainPnl.this.chkptDateLbl
-							.setText(MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString());
+							.setText(MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
 				revalidate();
 				repaint();

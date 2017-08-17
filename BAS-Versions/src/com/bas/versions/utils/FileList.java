@@ -77,12 +77,17 @@ public class FileList extends Observable {
 	 */
 	public FileList(final Set<File> setFile, String filterIn, String filterOut, Path projectPath) {
 
-		String[] inTab = filterIn.split(",");
-		String regexIn = "";
-		for (String str : inTab) {
-			regexIn += "(" + str + ")" + "|";
+		String regexIn;
+		if (filterIn.equals("*")) {
+			regexIn = (".");
+		} else {
+			String[] inTab = filterIn.split(",");
+			regexIn = "";
+			for (String str : inTab) {
+				regexIn += "(" + str + ")" + "|";
+			}
+			regexIn = regexIn.substring(0, regexIn.lastIndexOf("|"));
 		}
-		regexIn = regexIn.substring(0, regexIn.lastIndexOf("|"));
 		Pattern pattIn = Pattern.compile(regexIn, Pattern.CASE_INSENSITIVE);
 
 		String[] outTab = filterOut.split(",");
