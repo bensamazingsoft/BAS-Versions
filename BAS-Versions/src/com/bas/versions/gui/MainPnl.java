@@ -389,7 +389,7 @@ public class MainPnl extends JPanel implements Observer {
 		this.project.updateSets();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath()));
+				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
 				MainPnl.this.panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
 						MainPnl.this.project.getListFilteredFile()));
 				MainPnl.this.panel4ModFiles.add(
@@ -417,7 +417,7 @@ public class MainPnl extends JPanel implements Observer {
 				MainPnl.this.panel4Files.removeAll();
 				MainPnl.this.panel4FilteredFiles.removeAll();
 				MainPnl.this.panel4ModFiles.removeAll();
-				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath()));
+				MainPnl.this.panel4Files.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
 				MainPnl.this.panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
 						MainPnl.this.project.getListFilteredFile()));
 				MainPnl.this.panel4ModFiles.add(
