@@ -350,8 +350,7 @@ public class MainPnl extends JPanel implements Observer {
 			@Override
 			public void run() {
 				if (!MainPnl.this.noFilterCb.isSelected()) {
-					MainPnl.this.project.setFilterIn(filterInTf.getText());
-					MainPnl.this.project.setFilterOut(filterOutTf.getText());
+					MainPnl.this.project.setFilters(filterInTf.getText(), filterOutTf.getText());
 				}
 				MainPnl.this.update(null, null);
 			}

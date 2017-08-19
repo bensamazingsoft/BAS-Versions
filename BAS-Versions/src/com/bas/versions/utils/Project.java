@@ -181,7 +181,7 @@ public class Project extends Observable {
 		this.newAndFiltered.clear();
 		XmlWriter xw = new XmlWriter();
 		xw.WriteProjectXml(this);
-		this.updateSets();
+		updateSets();
 		setChanged();
 		notifyObservers();
 	}
@@ -300,6 +300,14 @@ public class Project extends Observable {
 	 *            the filterOut to set
 	 */
 	public void setFilterOut(String filterOut) {
+		this.filterOut = filterOut;
+		this.updateSets();
+		this.setChanged();
+		this.notifyObservers();
+	}
+	
+	public void setFilters(String filterIn, String filterOut){
+		this.filterIn = filterIn;
 		this.filterOut = filterOut;
 		this.updateSets();
 		this.setChanged();

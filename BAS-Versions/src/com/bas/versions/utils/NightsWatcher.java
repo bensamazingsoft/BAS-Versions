@@ -55,7 +55,27 @@ public class NightsWatcher {
 
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
+					
 					if (!pathEvent.context().startsWith(NightsWatcher.this.project.getWorkPath())) {
+						System.err.println("Event : " + kind + " in key : " + key.watchable().toString());
+
+						// (Path)key.watchable()).resolve(pathEvent.context()
+						// below is to get the actual path that triggered the
+						// watcher, the API returns a relative path that need to
+						// be resolved against the actual path that was
+						// registered.
+						if (((Path) key.watchable()).resolve(pathEvent.context()).toFile().isDirectory()) {
+							try {
+								((Path) key.watchable()).resolve(pathEvent.context()).register(watcher,
+										StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
+								System.err.println("registered folder : " + pathEvent.context().toString());
+							} catch (IOException e) {
+								JOptionPane.showMessageDialog(null, e.getMessage(),
+										"Error in the NightsWatch, folder registering failed",
+										JOptionPane.ERROR_MESSAGE);
+								e.printStackTrace();
+							}
+						}
 						this.project.reScan();
 					}
 				}
