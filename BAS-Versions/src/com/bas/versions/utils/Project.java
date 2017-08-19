@@ -45,7 +45,10 @@ public class Project extends Observable {
 	private Set<File> fileSet;
 	private Set<File> modFileSet;
 	private Set<File> filteredFileSet;
-	private Boolean filter = true;
+	private Set<File> state;
+	private Set<File> newFiles;
+	Set<File> newAndFiltered;
+	Set<File> tempSet = new HashSet<File>();
 
 	public Project() {
 
@@ -67,10 +70,13 @@ public class Project extends Observable {
 
 	public Project(Path projectPath) {
 
+		this.newFiles = new HashSet<File>();
+		this.newAndFiltered = new HashSet<File>();
+
 		projectId++;
 		this.id = projectId;
 		this.dateCreated = new Date();
-		this.filterIn = ".aep,.prpj,.psd,.ai,.txt,.srt";
+		this.filterIn = "*";
 		this.filterOut = "";
 		this.chkptMsg = "New project : " + projectPath.toFile().getName();
 		this.projectPath = projectPath;
@@ -81,13 +87,18 @@ public class Project extends Observable {
 		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut,
 				this.projectPath).getResult();
 		this.modFileSet = this.filteredFileSet;
+		this.state = this.getListFile();
 		setChanged();
 		notifyObservers();
 
 	}
 
 	public Project(Document doc) {
+
 		
+		this.newFiles = new HashSet<File>();
+		this.newAndFiltered = new HashSet<File>();
+
 		this.id = projectId;
 		this.dateCreated = new Date();
 		this.filterIn = "";
@@ -127,23 +138,34 @@ public class Project extends Observable {
 
 			NodeList stack = rootElt.getElementsByTagName("checkpoint");
 			int nbChkpt = stack.getLength();
-			
+
 			for (int i = 0; i < nbChkpt; i++) {
 
 				Element cpElt = (Element) stack.item(i);
-				Document tempDoc = builder.newDocument();		
+				Document tempDoc = builder.newDocument();
 				tempDoc.appendChild(tempDoc.importNode(cpElt, true));
 				CheckPoint cp = new CheckPoint(tempDoc);
 				this.getCheckPointStack().add(cp);
 			}
+
+			NodeList state = rootElt.getElementsByTagName("stateFile");
+			int nbStateFile = state.getLength();
+			for (int j = 0; j < nbStateFile; j++) {
+				tempSet.add(new File(state.item(j).getTextContent()));
+			}
+
 		} catch (NumberFormatException | DOMException | ParserConfigurationException | SAXException e) {
 			SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(),
 					"error in Project constructor", JOptionPane.ERROR_MESSAGE));
 			e.printStackTrace();
 		}
-		CheckPoint.setVersionId(this.getCheckPointStack().peekLast().getId()+1);
+		CheckPoint.setVersionId(this.getCheckPointStack().peekLast().getId() + 1);
 		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		this.state = new FileList(this.projectPath).getResult();
+		this.newFiles = this.state;
+		this.newFiles.removeAll(tempSet);
 		this.updateSets();
+
 		this.setChanged();
 		this.notifyObservers();
 	}
@@ -153,8 +175,13 @@ public class Project extends Observable {
 		CheckPoint newVers = new CheckPoint(new Date(), this.projectPath, this.modFileSet, this.chkptMsg);
 		newVers.writeFiles();
 		this.checkpointStack.add(newVers);
+		this.state = new FileList(projectPath).getResult();
+		this.tempSet = this.state;
+		this.newFiles.clear();
+		this.newAndFiltered.clear();
 		XmlWriter xw = new XmlWriter();
 		xw.WriteProjectXml(this);
+		this.updateSets();
 		setChanged();
 		notifyObservers();
 	}
@@ -164,20 +191,36 @@ public class Project extends Observable {
 	 */
 	public void updateSets() {
 
-		this.fileSet = new FileList(this.projectPath).getResult();
-		if (this.filter){
-		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut,
-				this.projectPath).getResult();
+		System.err.println(SwingUtilities.isEventDispatchThread());
+
+		Project.this.fileSet = new FileList(Project.this.projectPath).getResult();
+
+		Project.this.filteredFileSet = new FileList(Project.this.fileSet, Project.this.filterIn + ",",
+				"BAS-CheckPoints," + Project.this.filterOut, Project.this.projectPath).getResult();
+
+		if (Project.this.getCheckPointStack().peekLast() == null) {
+			Project.this.modFileSet = Project.this.filteredFileSet;
 		} else {
-			this.filteredFileSet = new FileList(this.fileSet, "*", "BAS-CheckPoints," + this.filterOut,
-				this.projectPath).getResult();
+			Project.this.modFileSet = new FileList(Project.this.filteredFileSet,
+					Project.this.getCheckPointStack().peekLast().getDateCreated()).getResult();
+			if (!Project.this.newFiles.isEmpty()) {
+				newAndFiltered = new FileList(Project.this.newFiles, Project.this.filterIn + ",",
+						"BAS-CheckPoints," + Project.this.filterOut, Project.this.projectPath).getResult();
+			}
+			if (!Project.this.newAndFiltered.isEmpty()) {
+				Project.this.newAndFiltered.forEach(Project.this.modFileSet::add);
+			}
 		}
-		if (this.getCheckPointStack().peekLast() == null) {
-			this.modFileSet = this.filteredFileSet;
-		} else {
-			this.modFileSet = new FileList(this.filteredFileSet, this.getCheckPointStack().peekLast().getDateCreated())
-					.getResult();
-		}
+
+	}
+
+	public void reScan() {
+		this.state = new FileList(this.projectPath).getResult();
+		this.newFiles = this.state;
+		this.newFiles.removeAll(tempSet);
+		this.updateSets();
+		setChanged();
+		notifyObservers();
 	}
 
 	// {{{ Getters/Setters
@@ -240,6 +283,9 @@ public class Project extends Observable {
 	 */
 	public void setFilterIn(String filterIn) {
 		this.filterIn = filterIn;
+		this.updateSets();
+		this.setChanged();
+		this.notifyObservers();
 	}
 
 	/**
@@ -255,6 +301,9 @@ public class Project extends Observable {
 	 */
 	public void setFilterOut(String filterOut) {
 		this.filterOut = filterOut;
+		this.updateSets();
+		this.setChanged();
+		this.notifyObservers();
 	}
 
 	/**
@@ -275,7 +324,7 @@ public class Project extends Observable {
 	/**
 	 * @return the versionPath
 	 */
-	public Path getVersionPath() {
+	public Path getWorkPath() {
 		return workPath;
 	}
 
@@ -283,7 +332,7 @@ public class Project extends Observable {
 	 * @param versionPath
 	 *            the versionPath to set
 	 */
-	public void setVersionPath(Path versionPath) {
+	public void setWorkPath(Path versionPath) {
 		this.workPath = versionPath;
 	}
 
@@ -355,17 +404,33 @@ public class Project extends Observable {
 	}
 
 	/**
-	 * @return the filter
+	 * @return the state
 	 */
-	public Boolean getFilter() {
-		return filter;
+	public Set<File> getState() {
+		return state;
 	}
 
 	/**
-	 * @param filter the filter to set
+	 * @param state
+	 *            the state to set
 	 */
-	public void setFilter(Boolean filter) {
-		this.filter = filter;
+	public void setState(Set<File> state) {
+		this.state = state;
+	}
+
+	/**
+	 * @return the newFiles
+	 */
+	public Set<File> getNewFiles() {
+		return newFiles;
+	}
+
+	/**
+	 * @param newFiles
+	 *            the newFiles to set
+	 */
+	public void setNewFiles(Set<File> newFiles) {
+		this.newFiles = newFiles;
 	}
 
 	// }}}

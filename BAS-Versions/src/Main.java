@@ -40,6 +40,8 @@ public class Main {
 
 		JFrame frame = new JFrame();
 		frame.setBounds(0, 0, 900, 600);
+		frame.setTitle("Ben's Amazing Versions - the Tool you needed your whole life");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		MainPnl mainpnl = new MainPnl();
 		frame.getContentPane().add(mainpnl);
 		frame.setLocationRelativeTo(null);

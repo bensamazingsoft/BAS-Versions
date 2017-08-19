@@ -9,10 +9,20 @@
 	<xs:element name="filterIn" type="xs:string"></xs:element>
 	<xs:element name="filterOut" type="xs:string"></xs:element>
 
+	<xs:element name="stateFile" type="xs:string"></xs:element>
+
 	<xs:element name="stack">
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element ref="checkpoint" minOccurs="1" maxOccurs="unbounded"></xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="state">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="stateFile" minOccurs="0" maxOccurs="unbounded"></xs:element>
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
@@ -23,6 +33,7 @@
 				<xs:element ref="filterIn" minOccurs="1"></xs:element>
 				<xs:element ref="filterOut" minOccurs="1"></xs:element>
 				<xs:element ref="stack" minOccurs="1"></xs:element>
+				<xs:element ref="state" minOccurs="1"></xs:element>
 			</xs:sequence>
 			<xs:attribute ref="pr_id" use="required"></xs:attribute>
 			<xs:attribute ref="pr_date" use="required"></xs:attribute>

@@ -38,6 +38,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.bas.versions.utils.BasProperties;
+import com.bas.versions.utils.NightsWatcher;
 import com.bas.versions.utils.Project;
 import com.bas.versions.xml.ProjectParser;
 
@@ -73,18 +74,18 @@ public class MainPnl extends JPanel implements Observer {
 	private final JPanel panel_6 = new JPanel();
 	private final JPanel panel_7 = new JPanel();
 	private final JCheckBox noFilterCb = new JCheckBox("No filters");
-	Boolean filter = true;
 	BasProperties config;
-	
+	NightsWatcher jon;
+
 	/**
 	 * Create the panel.
 	 */
 	public MainPnl() {
-		
+
 		config = new BasProperties();
-		
+
 		File confFile = new File("config.properties");
-		if (confFile.exists()){
+		if (confFile.exists()) {
 			config.loadProperties(confFile);
 			loadJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
 			newJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
@@ -238,28 +239,29 @@ public class MainPnl extends JPanel implements Observer {
 
 		updateBut.setEnabled(false);
 		panel_3.add(updateBut);
-		
+
 		noFilterCb.setEnabled(false);
 		noFilterCb.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent arg0) {
-				filter = (!noFilterCb.isSelected());
-				MainPnl.this.project.setFilter(filter);
-				MainPnl.this.project.updateSets();
-				MainPnl.this.update(null,null);
-				if (noFilterCb.isSelected()){
-					MainPnl.this.filterInTf.setText("filtering disabled");
+
+				if (noFilterCb.isSelected()) {
+					MainPnl.this.project.setFilterIn("*");
+					MainPnl.this.project.setFilterOut("");
 					MainPnl.this.filterInTf.setEnabled(false);
 					MainPnl.this.filterOutTf.setEnabled(false);
 				}
-				if (!noFilterCb.isSelected()){
-//					MainPnl.this.filterInTf.setText("");
+
+				if (!noFilterCb.isSelected()) {
+					MainPnl.this.filterInTf.setText(MainPnl.this.project.getFilterIn());
+					MainPnl.this.filterOutTf.setText(MainPnl.this.project.getFilterOut());
 					MainPnl.this.filterInTf.setEnabled(true);
 					MainPnl.this.filterOutTf.setEnabled(true);
 				}
 			}
+			
 		});
 		noFilterCb.setToolTipText("Disable filtering");
-		
+
 		panel_3.add(noFilterCb);
 
 		panel4Files.setPreferredSize(new Dimension(300, 300));
@@ -347,8 +349,10 @@ public class MainPnl extends JPanel implements Observer {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				MainPnl.this.project.setFilterIn(filterInTf.getText());
-				MainPnl.this.project.setFilterOut(filterOutTf.getText());
+				if (!MainPnl.this.noFilterCb.isSelected()) {
+					MainPnl.this.project.setFilterIn(filterInTf.getText());
+					MainPnl.this.project.setFilterOut(filterOutTf.getText());
+				}
 				MainPnl.this.update(null, null);
 			}
 		}).start();
@@ -392,8 +396,9 @@ public class MainPnl extends JPanel implements Observer {
 					initPanel(new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath())));
 					MainPnl.this.project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
-					MainPnl.this.update(null, null);
-					MainPnl.this.config.getProp().setProperty("lastPath", MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+//					MainPnl.this.update(null, null);
+					MainPnl.this.config.getProp().setProperty("lastPath",
+							MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
 					MainPnl.this.config.updateConf();
 
 				}
@@ -402,7 +407,7 @@ public class MainPnl extends JPanel implements Observer {
 
 	}
 
-	protected void loadProject() {
+	public void loadProject() {
 
 		final int result = loadJfc.showOpenDialog(getParent());
 
@@ -414,7 +419,8 @@ public class MainPnl extends JPanel implements Observer {
 					initPanel(new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc()));
 					MainPnl.this.project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
-					MainPnl.this.config.getProp().setProperty("lastPath", MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+					MainPnl.this.config.getProp().setProperty("lastPath",
+							MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
 					MainPnl.this.config.updateConf();
 					MainPnl.this.update(null, null);
 				}
@@ -426,6 +432,12 @@ public class MainPnl extends JPanel implements Observer {
 	public void initPanel(Project project) {
 
 		this.project = project;
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				jon = new NightsWatcher(MainPnl.this.project);
+			}
+		}).start();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				MainPnl.this.projectLbl.setText("/" + MainPnl.this.project.getProjectPath().toFile().getName() + "/");
@@ -436,11 +448,9 @@ public class MainPnl extends JPanel implements Observer {
 				}
 				MainPnl.this.filterInTf.setText(MainPnl.this.project.getFilterIn());
 				MainPnl.this.filterOutTf.setText(MainPnl.this.project.getFilterOut());
-			}
-		});
-		this.project.updateSets();
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
+
+//				MainPnl.this.project.updateSets();
+
 				MainPnl.this.panel4Files
 						.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
 				MainPnl.this.panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
@@ -448,10 +458,12 @@ public class MainPnl extends JPanel implements Observer {
 				MainPnl.this.panel4ModFiles.add(
 						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
 				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
-					MainPnl.this.chkptDateLbl
-							.setText(MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
+					MainPnl.this.lastChkptLbl
+							.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
+					MainPnl.this.chkptDateLbl.setText(
+							MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
+
 				createChkptBut.setEnabled(true);
 				noFilterCb.setEnabled(true);
 				revalidate();
@@ -464,10 +476,7 @@ public class MainPnl extends JPanel implements Observer {
 	@Override
 	public void update(Observable arg0, Object arg1) {
 
-		MainPnl.this.filterInTf.setText(MainPnl.this.project.getFilterIn());
-		MainPnl.this.filterOutTf.setText(MainPnl.this.project.getFilterOut());
-
-		this.project.updateSets();
+		System.err.println("GUIupdate");
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				MainPnl.this.panel4Files.removeAll();
@@ -480,9 +489,10 @@ public class MainPnl extends JPanel implements Observer {
 				MainPnl.this.panel4ModFiles.add(
 						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
 				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					MainPnl.this.lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
-					MainPnl.this.chkptDateLbl
-							.setText(MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
+					MainPnl.this.lastChkptLbl
+							.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
+					MainPnl.this.chkptDateLbl.setText(
+							MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
 				revalidate();
 				repaint();

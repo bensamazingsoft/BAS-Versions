@@ -78,7 +78,7 @@ public class FileList extends Observable {
 	public FileList(final Set<File> setFile, String filterIn, String filterOut, Path projectPath) {
 
 		String regexIn;
-		if (filterIn.equals("*")) {
+		if (filterIn.equals("*") || filterIn.equals("*,")) {
 			regexIn = (".");
 		} else {
 			String[] inTab = filterIn.split(",");

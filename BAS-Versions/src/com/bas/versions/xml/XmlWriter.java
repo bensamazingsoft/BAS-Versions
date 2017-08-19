@@ -102,6 +102,15 @@ public class XmlWriter {
 				stack.appendChild(cpNode);
 			}
 
+			Element state = docPro.createElement("state");
+			rootProElt.appendChild(state);
+			Iterator<File> it2 = proj.getState().iterator();
+			while(it2.hasNext()){
+				Element stateFile = docPro.createElement("stateFile");
+				stateFile.setTextContent(it2.next().getAbsolutePath());
+				state.appendChild(stateFile);
+			}
+			
 			docPro.appendChild(rootProElt);
 
 			writeXmlFile(xmlFile, docPro);
@@ -139,6 +148,8 @@ public class XmlWriter {
 		trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
 		trans.transform(domSrc, result);
+		
+	
 	}
 
 	/**
