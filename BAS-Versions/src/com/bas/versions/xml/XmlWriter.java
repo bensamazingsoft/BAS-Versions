@@ -53,14 +53,15 @@ public class XmlWriter {
 
 		} catch (DOMException | ParserConfigurationException | TransformerFactoryConfigurationError
 				| TransformerException e) {
-			JOptionPane.showInternalMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
 	}
 
-	/**	 
-	 * writes Project to disk in an xml file with .basv extension (for
-	 * cosmetic reasons
+	/**
+	 * writes Project to disk in an xml file with .basv extension (for cosmetic
+	 * reasons
+	 * 
 	 * @param proj
 	 */
 	public void WriteProjectXml(Project proj) {
@@ -105,12 +106,12 @@ public class XmlWriter {
 			Element state = docPro.createElement("state");
 			rootProElt.appendChild(state);
 			Iterator<File> it2 = proj.getState().iterator();
-			while(it2.hasNext()){
+			while (it2.hasNext()) {
 				Element stateFile = docPro.createElement("stateFile");
 				stateFile.setTextContent(it2.next().getAbsolutePath());
 				state.appendChild(stateFile);
 			}
-			
+
 			docPro.appendChild(rootProElt);
 
 			writeXmlFile(xmlFile, docPro);
@@ -123,7 +124,8 @@ public class XmlWriter {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				if (xmlFile.exists()) {
-//					JOptionPane.showMessageDialog(null, "project saved", "info", JOptionPane.INFORMATION_MESSAGE);
+					// JOptionPane.showMessageDialog(null, "project saved",
+					// "info", JOptionPane.INFORMATION_MESSAGE);
 				} else {
 					JOptionPane.showMessageDialog(null, "project save failed", "error", JOptionPane.ERROR_MESSAGE);
 				}
@@ -148,8 +150,7 @@ public class XmlWriter {
 		trans.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
 		trans.transform(domSrc, result);
-		
-	
+
 	}
 
 	/**

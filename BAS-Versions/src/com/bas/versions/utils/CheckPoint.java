@@ -217,9 +217,9 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 
 		String msg = this.chkptMsg;
 		if (this.chkptMsg.length() > 31) {
-			msg = this.chkptMsg.substring(0, 30) + "...";
+			msg = this.chkptMsg.replace(System.getProperty("line.separator"), "").substring(0, 30) + "...";
 		}
-		String str = "CheckPoint " + formatId + "[" + msg + "]";
+		String str = "CheckPoint " + formatId + "[" + msg.replace(System.getProperty("line.separator"), " ") + "]";
 		return str;
 	}
 
@@ -282,7 +282,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	/**
 	 * @return the chkptId
 	 */
-	public static int getVersionId() {
+	public static int getCheckPointId() {
 		return chkptId;
 	}
 

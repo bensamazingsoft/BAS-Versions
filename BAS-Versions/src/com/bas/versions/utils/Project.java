@@ -177,6 +177,7 @@ public class Project extends Observable {
 		this.checkpointStack.add(newVers);
 		this.state = new FileList(projectPath).getResult();
 		this.tempSet = this.state;
+		this.tempSet.removeIf(file -> newFiles.contains(file) && !modFileSet.contains(file));
 		this.newFiles.clear();
 		this.newAndFiltered.clear();
 		XmlWriter xw = new XmlWriter();
@@ -309,9 +310,6 @@ public class Project extends Observable {
 	public void setFilters(String filterIn, String filterOut){
 		this.filterIn = filterIn;
 		this.filterOut = filterOut;
-		this.updateSets();
-		this.setChanged();
-		this.notifyObservers();
 	}
 
 	/**

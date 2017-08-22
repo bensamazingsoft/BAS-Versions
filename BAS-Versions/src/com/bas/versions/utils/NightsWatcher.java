@@ -1,5 +1,7 @@
 package com.bas.versions.utils;
 
+import static com.bas.versions.utils.LogGenerator.log;
+
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -20,7 +22,11 @@ public class NightsWatcher {
 	WatchKey key;
 	Project project;
 
+	static boolean pause = false;
+
 	public NightsWatcher(Project theProject) {
+
+		log("Started watch service");
 
 		this.project = theProject;
 		this.path2Watch = this.project.getProjectPath();
@@ -36,65 +42,66 @@ public class NightsWatcher {
 		}
 
 		for (;;) {
-			try {
-				key = watcher.take();
-			} catch (InterruptedException e) {
-				return;
-			}
-
-			for (WatchEvent<?> event : key.pollEvents()) {
-
-				WatchEvent.Kind<?> kind = event.kind();
-
-				if (kind == StandardWatchEventKinds.OVERFLOW) {
-					continue;
+			if (!pause) {
+				try {
+					key = watcher.take();
+				} catch (InterruptedException e) {
+					return;
 				}
 
-				if ((kind == StandardWatchEventKinds.ENTRY_CREATE || kind == StandardWatchEventKinds.ENTRY_MODIFY)
-						&& key.watchable() != this.project.getWorkPath()) {
+				for (WatchEvent<?> event : key.pollEvents()) {
+
+					WatchEvent.Kind<?> kind = event.kind();
+
+					if (kind == StandardWatchEventKinds.OVERFLOW) {
+						continue;
+					}
 
 					@SuppressWarnings("unchecked")
 					WatchEvent<Path> pathEvent = (WatchEvent<Path>) event;
-					
-					if (!pathEvent.context().startsWith(NightsWatcher.this.project.getWorkPath())) {
-						System.err.println("Event : " + kind + " in key : " + key.watchable().toString());
 
-						// (Path)key.watchable()).resolve(pathEvent.context()
-						// below is to get the actual path that triggered the
-						// watcher, the API returns a relative path that need to
-						// be resolved against the actual path that was
-						// registered.
-						if (((Path) key.watchable()).resolve(pathEvent.context()).toFile().isDirectory()) {
-							try {
-								((Path) key.watchable()).resolve(pathEvent.context()).register(watcher,
-										StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY);
-								System.err.println("registered folder : " + pathEvent.context().toString());
-							} catch (IOException e) {
-								JOptionPane.showMessageDialog(null, e.getMessage(),
-										"Error in the NightsWatch, folder registering failed",
-										JOptionPane.ERROR_MESSAGE);
-								e.printStackTrace();
-							}
+					System.err.println("Event : " + kind + " in key : " + key.watchable().toString());
+
+					// (Path)key.watchable()).resolve(pathEvent.context())
+					// below is to get the actual path that triggered the
+					// watcher, the API returns a relative path that need to
+					// be resolved against the actual path that was
+					// registered.
+					Path trigPath = ((Path) key.watchable()).resolve(pathEvent.context());
+					if (trigPath.toFile().isDirectory() && !(trigPath.startsWith(this.project.getWorkPath()))) {
+						try {
+							trigPath.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
+									StandardWatchEventKinds.ENTRY_MODIFY);
+							log("Watch Service : registered folder : " + pathEvent.context().toString());
+						} catch (IOException e) {
+							JOptionPane.showMessageDialog(null, e.getMessage(),
+									"Error in the NightsWatch, folder registering failed", JOptionPane.ERROR_MESSAGE);
+							log("Watch Service : Error in the NightsWatch, folder registering failed" + "\n\t"
+									+ e.getStackTrace());
+							e.printStackTrace();
 						}
 						this.project.reScan();
 					}
-				}
-				boolean valid = key.reset();
-				if (!valid) {
-					break;
+					if (trigPath.toFile().isFile()) {
+						this.project.reScan();
+					}
+					boolean valid = key.reset();
+					if (!valid) {
+						break;
+					}
 				}
 			}
 		}
 	}
 
 	/**
-	 * recusively registers all folders to the NightsWatch
+	 * Recursively registers all folders to the NightsWatch
 	 * 
 	 * @throws IOException
 	 */
 	private void registerPaths() throws IOException {
 
-		System.err.println("registering paths");
+		log("Watch Service : registering paths");
 
 		Files.walkFileTree(path2Watch, new SimpleFileVisitor<Path>() {
 
@@ -104,7 +111,7 @@ public class NightsWatcher {
 					@SuppressWarnings("unused")
 					WatchKey wk = file.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
 							StandardWatchEventKinds.ENTRY_MODIFY);
-					System.err.println("\t registered : " + file.toFile().getAbsolutePath());
+					log("\t registered : " + file.toFile().getAbsolutePath());
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -113,10 +120,26 @@ public class NightsWatcher {
 			public FileVisitResult visitFileFailed(Path file, IOException e) {
 				JOptionPane.showMessageDialog(null, e.getMessage(), "Error in the NightsWatch, walking the tree failed",
 						JOptionPane.ERROR_MESSAGE);
+				log("Watch Service : Error in the NightsWatch, walking the tree failed" + "\n\t" + e.getStackTrace());
 				e.printStackTrace();
 				return FileVisitResult.CONTINUE;
 			}
 		});
+	}
+
+	/**
+	 * @return the pause
+	 */
+	public static boolean isPause() {
+		return pause;
+	}
+
+	/**
+	 * @param pause
+	 *            the pause to set
+	 */
+	public static void setPause(boolean pause) {
+		NightsWatcher.pause = pause;
 	}
 
 }

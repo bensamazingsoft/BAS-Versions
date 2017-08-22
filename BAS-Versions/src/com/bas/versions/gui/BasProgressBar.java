@@ -23,7 +23,7 @@ public class BasProgressBar extends JFrame implements Observer {
 		this.setSize(500, 100);
 		this.setTitle(title);
 		this.setLocationRelativeTo(null);
-		this.setAlwaysOnTop(true);
+		this.setAlwaysOnTop(false);
 
 		bar = new JProgressBar();
 		label = new JLabel();
