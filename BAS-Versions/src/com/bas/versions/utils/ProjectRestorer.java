@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.bas.versions.gui.BasPgBarUpdtePair;
 import com.bas.versions.gui.BasProgressBar;
@@ -40,35 +41,35 @@ public class ProjectRestorer extends Observable {
 	private int nbFiles;
 	private boolean archive = false;
 
-	public ProjectRestorer(Project proj, Path newPath, int lvl) {
+	public ProjectRestorer(Project project, Path newPath, int level) {
 
 		// initiate fields for archiving process
-		this.project = proj;
-		this.level = lvl;
-		this.cpList = proj.getCheckPointStack();
-		this.restorePath = newPath;
-		this.archive = !(this.restorePath.equals(this.project.getProjectPath()));
+		this.project = project;
+		this.level = level;
+		cpList = project.getCheckPointStack();
+		restorePath = newPath;
+		archive = !(restorePath.equals(project.getProjectPath()));
 
 		// remove unwanted CheckPoints
-		this.cpList.removeIf(cp -> (cp.getId() > this.level));
+		cpList.removeIf(cp -> (cp.getId() > level));
 
 		// collect all files, in reversed order, to have the latest version of
 		// each file put first in the Map, rejecting files already there.
-		this.cpList.stream().sorted(Collections.reverseOrder())
+		cpList.stream().sorted(Collections.reverseOrder())
 				.forEach(cp -> cp.getChckPtFileList().stream().forEach(f -> {
 					if (!cpFiles2Restore.containsKey(f.getName())) {
-						this.cpFiles2Restore.put(f.getName(), f);
+						cpFiles2Restore.put(f.getName(), f);
 					}
 				}));
 
 		// getting project files that were filtered out (not in any Checkpoint)
 		if (archive) {
-			archiveFile = new FileList(this.project.getListFile(), "*", "BAS-CheckPoints,", this.project.getProjectPath()).getResult().stream()
+			archiveFile = new FileList(project.getListFile(), "*", "BAS-CheckPoints,", project.getProjectPath()).getResult().stream()
 					.filter(file -> !cpFiles2Restore.containsKey(file.getName())).collect(Collectors.toSet());
 		}
 		
 		// for the progrees bar
-		this.nbFiles = this.cpFiles2Restore.size() + archiveFile.size();
+		nbFiles = cpFiles2Restore.size() + archiveFile.size();
 		
 		// filling the map of files to process
 		cpFiles2Restore.values().stream().forEach(file -> files2Copy.put(file, reverseFilename(file, true)));
@@ -82,13 +83,16 @@ public class ProjectRestorer extends Observable {
 	 * 
 	 */
 	public void restoreFiles() {
+		
+		System.err.println(SwingUtilities.isEventDispatchThread());
+		
 		boolean live = NightsWatcher.isPause();
 		NightsWatcher.setPause(true);
 
-		log("Start restore process");
+		log("Start restore process ");
 
 		bar = new BasProgressBar("restoring files", nbFiles);
-		this.addObserver(bar);
+		addObserver(bar);
 
 		Set<File> missing = new HashSet<>();
 
@@ -127,6 +131,7 @@ public class ProjectRestorer extends Observable {
 			showMessageDialog(null, (missing.size() + " file missing " + mess), "info", INFORMATION_MESSAGE);
 		}
 		NightsWatcher.setPause(live);
+		project.reScan();
 	}
 
 	/**
@@ -140,17 +145,16 @@ public class ProjectRestorer extends Observable {
 	private File reverseFilename(File in, boolean cp) {
 
 		String baseFileName = in.getAbsolutePath();
-		String outFileName = baseFileName.replace(this.project.getWorkPath().toFile().getAbsolutePath(), "");
+		String outFileName = baseFileName.replace(project.getWorkPath().toFile().getAbsolutePath(), "");
 		if (cp) {
 			Path temp = new File(outFileName).toPath();
 			outFileName = outFileName.replace("\\" + temp.getName(0) + "\\", "");
 		}
 		if (!cp){
-			outFileName = outFileName.replace(this.project.getProjectPath().toFile().getAbsolutePath(), "");
+			outFileName = outFileName.replace(project.getProjectPath().toFile().getAbsolutePath(), "");
 		}
 		File out = new File(restorePath.toFile().getAbsolutePath() + "\\" + outFileName);
-		System.err.println("reversed to : " + out.getAbsolutePath());
-
+	
 		return out;
 
 	}

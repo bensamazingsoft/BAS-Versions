@@ -105,7 +105,7 @@ public class XmlWriter {
 
 			Element state = docPro.createElement("state");
 			rootProElt.appendChild(state);
-			Iterator<File> it2 = proj.getState().iterator();
+			Iterator<File> it2 = proj.getFilesFromXml().iterator();
 			while (it2.hasNext()) {
 				Element stateFile = docPro.createElement("stateFile");
 				stateFile.setTextContent(it2.next().getAbsolutePath());

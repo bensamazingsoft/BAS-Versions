@@ -41,13 +41,13 @@ public class RestoreFrame extends JFrame {
 	private final JButton btnNewButton = new JButton("Restore files");
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public RestoreFrame(Project proj) {
+	public RestoreFrame(Project project) {
 
-		this.project = proj;
+		this.project = project;
 
-		this.setTitle("File Restoration");
-		this.setSize(new Dimension(600, 300));
-		this.setLocationRelativeTo(null);
+		setTitle("File Restoration");
+		setSize(new Dimension(600, 300));
+		setLocationRelativeTo(null);
 		panel.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "files",
 				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		getContentPane().add(panel, BorderLayout.CENTER);
@@ -57,9 +57,9 @@ public class RestoreFrame extends JFrame {
 
 		selCpPnl.add(panel_1, BorderLayout.WEST);
 		panel_1.add(selCpLbl);
-		comboBox = new JComboBox(this.project.getCheckPointStack().toArray());
+		comboBox = new JComboBox(project.getCheckPointStack().toArray());
 		if (comboBox.getSelectedItem() != null) {
-			panel.add(new BasJTree(this.project.getProjectPath(),
+			panel.add(new BasJTree(project.getProjectPath(),
 					((CheckPoint) comboBox.getSelectedItem()).getChckPtFileList()), BorderLayout.CENTER);
 			selectedCp = (CheckPoint) comboBox.getSelectedItem();
 		}
@@ -95,7 +95,7 @@ public class RestoreFrame extends JFrame {
 			msgTp.setText(selectedCp.getChkPtMsg());
 		}
 
-		this.setVisible(true);
+		setVisible(true);
 
 	}
 
@@ -106,25 +106,30 @@ public class RestoreFrame extends JFrame {
 
 		if (action == JOptionPane.OK_OPTION) {
 			restoreAction();
-			this.dispose();
+			dispose();
 		}
 	}
 
 	protected void restoreAction() {
 
-		restorer = new ProjectRestorer(project, this.project.getProjectPath(), selectedCp.getId());
-		restorer.restoreFiles();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				restorer = new ProjectRestorer(project, project.getProjectPath(), selectedCp.getId());
+				restorer.restoreFiles();
+			}
+		}).start();
 	}
 
 	private void update() {
 		panel.removeAll();
 		if (comboBox.getSelectedItem() != null) {
-			panel.add(new BasJTree(this.project.getProjectPath(), selectedCp.getChckPtFileList()));
+			panel.add(new BasJTree(project.getProjectPath(), selectedCp.getChckPtFileList()));
 			msgTp.setText(selectedCp.getChkPtMsg());
 		}
 
-		this.revalidate();
-		this.repaint();
+		revalidate();
+		repaint();
 	}
 
 }

@@ -43,23 +43,23 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	private BasProgressBar pgBar;
 
 	public CheckPoint() {
-		this.dateCreated = null;
-		this.chkptPath = null;
-		this.id = chkptId;
+		dateCreated = null;
+		chkptPath = null;
+		id = chkptId;
 		chkptId++;
 	}
 
 	public CheckPoint(Date date, Path projectPath, Set<File> fileList, String msg) {
 
-		this.id = chkptId;
-		this.formatId = String.format("%04d", this.id);
-		this.dateCreated = date;
+		id = chkptId;
+		formatId = String.format("%04d", id);
+		dateCreated = date;
 		this.projectPath = projectPath;
-		this.chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint"
-				+ this.formatId + "[" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(dateCreated) + "]");
-		this.chkptMsg = msg;
-		this.fileTab = new File[2][fileList.size()];
-		this.chkptFileList = mkChkptFileList(fileList);
+		chkptPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints" + "\\" + "Checkpoint"
+				+ formatId + "[" + new SimpleDateFormat("yyyy-MM-dd_HH-mm").format(dateCreated) + "]");
+		chkptMsg = msg;
+		fileTab = new File[2][fileList.size()];
+		chkptFileList = mkChkptFileList(fileList);
 		chkptId++;
 
 	}
@@ -67,24 +67,24 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	public CheckPoint(Document doc){
 		
 		Element rootElt = doc.getDocumentElement();
-		this.id = Integer.valueOf(rootElt.getAttribute("id"));
-		this.formatId = String.format("%04d", this.id);
+		id = Integer.valueOf(rootElt.getAttribute("id"));
+		formatId = String.format("%04d", id);
 		try {
-			this.dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:'00'").parse(rootElt.getAttribute("date"));
+			dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:'00'").parse(rootElt.getAttribute("date"));
 		} catch (ParseException e) {
 			JOptionPane.showMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 		}
-		this.projectPath = Paths.get(rootElt.getAttribute("projectPath"));
-		this.chkptPath = Paths.get(rootElt.getAttribute("checkpointPath"));
+		projectPath = Paths.get(rootElt.getAttribute("projectPath"));
+		chkptPath = Paths.get(rootElt.getAttribute("checkpointPath"));
 		
 		NodeList msgList = doc.getElementsByTagName("message");
-		this.chkptMsg = msgList.item(0).getTextContent();
+		chkptMsg = msgList.item(0).getTextContent();
 		
 		NodeList fileList = doc.getElementsByTagName("file");
 		int nbFile = fileList.getLength();
 		for (int i = 0; i<nbFile; i++){
-			this.chkptFileList.add(new File(fileList.item(i).getTextContent()));
+			chkptFileList.add(new File(fileList.item(i).getTextContent()));
 		}
 
 	
@@ -100,7 +100,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		BasPgBarUpdtePair pair;
 
 		pgBar = new BasProgressBar("Indexing CheckPoint " + formatId + " files", projectFileList.size());
-		this.addObserver(pgBar);
+		addObserver(pgBar);
 		pgBar.setVisible(true);
 
 		Iterator<File> it = projectFileList.iterator();
@@ -108,10 +108,10 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 		while (it.hasNext()) {
 
 			File file = it.next();
-			File newFile = changeFilePath(file, this.projectPath, this.chkptPath);
+			File newFile = changeFilePath(file, projectPath, chkptPath);
 			chkptFileList.add(newFile);
-			this.fileTab[0][i] = file;
-			this.fileTab[1][i] = newFile;
+			fileTab[0][i] = file;
+			fileTab[1][i] = newFile;
 			pair = new BasPgBarUpdtePair("Indexed file : " + file.getName(), i + 1);
 			i++;
 			setChanged();
@@ -130,19 +130,19 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	@SuppressWarnings("static-access")
 	public void writeFiles() {
 
-		File newFolder = this.chkptPath.toFile();
+		File newFolder = chkptPath.toFile();
 		newFolder.mkdirs();
 
 		BasPgBarUpdtePair pair;
 
-		pgBar = new BasProgressBar("Copying Files to Checkpoint" + formatId, this.fileTab[0].length + 3);
-		this.addObserver(pgBar);
+		pgBar = new BasProgressBar("Copying Files to Checkpoint" + formatId, fileTab[0].length + 3);
+		addObserver(pgBar);
 		pgBar.setVisible(true);
 
-		for (int i = 0; i < this.fileTab[0].length; i++) {
+		for (int i = 0; i < fileTab[0].length; i++) {
 			boolean success = false;
 			try {
-				success = copyFile2CheckPointPath(this.fileTab[0][i], this.fileTab[1][i]);
+				success = copyFile2CheckPointPath(fileTab[0][i], fileTab[1][i]);
 			} catch (IOException e) {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
@@ -159,7 +159,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 					}
 				});
 			} else {
-				pair = new BasPgBarUpdtePair("Copied file : " + this.fileTab[1][i].getName(), i + 1);
+				pair = new BasPgBarUpdtePair("Copied file : " + fileTab[1][i].getName(), i + 1);
 				setChanged();
 				notifyObservers(pair);
 			}
@@ -184,7 +184,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 				}
 			});
 		} else {
-			pair = new BasPgBarUpdtePair("Copied file : " + title + ".txt", this.fileTab.length + 3);
+			pair = new BasPgBarUpdtePair("Copied file : " + title + ".txt", fileTab.length + 3);
 			setChanged();
 			notifyObservers(pair);
 		}
@@ -213,11 +213,11 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 */
 	@Override
 	public String toString() {
-		this.formatId = String.format("%04d", this.id);
+		formatId = String.format("%04d", id);
 
-		String msg = this.chkptMsg;
-		if (this.chkptMsg.length() > 31) {
-			msg = this.chkptMsg.replace(System.getProperty("line.separator"), "").substring(0, 30) + "...";
+		String msg = chkptMsg;
+		if (chkptMsg.length() > 31) {
+			msg = chkptMsg.replace(System.getProperty("line.separator"), "").substring(0, 30) + "...";
 		}
 		String str = "CheckPoint " + formatId + "[" + msg.replace(System.getProperty("line.separator"), " ") + "]";
 		return str;
@@ -275,7 +275,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 
 	@Override
 	public int compareTo(CheckPoint v) {
-		return this.dateCreated.compareTo(v.dateCreated);
+		return dateCreated.compareTo(v.dateCreated);
 	}
 
 	// {{{ getters and setters
@@ -406,7 +406,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 *            the versionFileModList to set
 	 */
 	public void setVersionFileModList(Set<File> versionFileModList) {
-		this.chkptFileList = versionFileModList;
+		chkptFileList = versionFileModList;
 	}
 
 	/**
@@ -421,7 +421,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 *            the chkptPath to set
 	 */
 	public void setVersionPath(Path versionPath) {
-		this.chkptPath = versionPath;
+		chkptPath = versionPath;
 	}
 
 	/**
@@ -436,7 +436,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 *            the chkptMsg to set
 	 */
 	public void setVersionMsg(String versionMsg) {
-		this.chkptMsg = versionMsg;
+		chkptMsg = versionMsg;
 	}
 
 	/**

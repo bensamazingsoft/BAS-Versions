@@ -24,12 +24,12 @@ public class NightsWatcher {
 
 	static boolean pause = false;
 
-	public NightsWatcher(Project theProject) {
+	public NightsWatcher(Project project) {
 
 		log("Started watch service");
 
-		this.project = theProject;
-		this.path2Watch = this.project.getProjectPath();
+		this.project = project;
+		path2Watch = project.getProjectPath();
 
 		try {
 			watcher = FileSystems.getDefault().newWatchService();
@@ -42,12 +42,12 @@ public class NightsWatcher {
 		}
 
 		for (;;) {
-			if (!pause) {
 				try {
 					key = watcher.take();
 				} catch (InterruptedException e) {
 					return;
 				}
+				if (!pause) {
 
 				for (WatchEvent<?> event : key.pollEvents()) {
 
@@ -68,7 +68,7 @@ public class NightsWatcher {
 					// be resolved against the actual path that was
 					// registered.
 					Path trigPath = ((Path) key.watchable()).resolve(pathEvent.context());
-					if (trigPath.toFile().isDirectory() && !(trigPath.startsWith(this.project.getWorkPath()))) {
+					if (trigPath.toFile().isDirectory() && !(trigPath.startsWith(project.getWorkPath()))) {
 						try {
 							trigPath.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
 									StandardWatchEventKinds.ENTRY_MODIFY);
@@ -80,10 +80,10 @@ public class NightsWatcher {
 									+ e.getStackTrace());
 							e.printStackTrace();
 						}
-						this.project.reScan();
+						project.reScan();
 					}
 					if (trigPath.toFile().isFile()) {
-						this.project.reScan();
+						project.reScan();
 					}
 					boolean valid = key.reset();
 					if (!valid) {
@@ -91,6 +91,7 @@ public class NightsWatcher {
 					}
 				}
 			}
+				pause = isPause();
 		}
 	}
 
@@ -107,7 +108,7 @@ public class NightsWatcher {
 
 			@Override
 			public FileVisitResult postVisitDirectory(Path file, IOException exc) throws IOException {
-				if (!file.startsWith(NightsWatcher.this.project.getWorkPath())) {
+				if (!file.startsWith(project.getWorkPath())) {
 					@SuppressWarnings("unused")
 					WatchKey wk = file.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
 							StandardWatchEventKinds.ENTRY_MODIFY);

@@ -1,5 +1,7 @@
 package com.bas.versions.utils;
 
+import static com.bas.versions.utils.LogGenerator.log;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,70 +47,77 @@ public class Project extends Observable {
 	private Set<File> fileSet;
 	private Set<File> modFileSet;
 	private Set<File> filteredFileSet;
-	private Set<File> state;
-	private Set<File> newFiles;
-	Set<File> newAndFiltered;
-	Set<File> tempSet = new HashSet<File>();
+	private Set<File> filesInProjectFolder;
+	private Set<File> nonCommittedFiles;
+	Set<File> nonCommittedAndFilteredFiles;
+	Set<File> filesFromXml = new HashSet<File>();
+	private boolean autoCommit;
+	protected long waitTime = 10000;
 
 	public Project() {
 
 		projectId++;
-		this.id = projectId;
-		this.dateCreated = new Date();
-		this.filterIn = "";
-		this.filterOut = "";
-		this.chkptMsg = "No message";
-		this.projectPath = null;
-		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
-		this.checkpointStack = new LinkedList<>();
-		this.fileSet = new HashSet<File>();
-		this.modFileSet = new HashSet<File>();
-		this.filteredFileSet = new HashSet<File>();
+		id = projectId;
+		dateCreated = new Date();
+		filterIn = "";
+		filterOut = "";
+		chkptMsg = "No message";
+		projectPath = null;
+		workPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		checkpointStack = new LinkedList<>();
+		fileSet = new HashSet<File>();
+		modFileSet = new HashSet<File>();
+		filteredFileSet = new HashSet<File>();
 		setChanged();
 		notifyObservers();
 	}
 
 	public Project(Path projectPath) {
 
-		this.newFiles = new HashSet<File>();
-		this.newAndFiltered = new HashSet<File>();
+		nonCommittedFiles = new HashSet<File>();
+		nonCommittedAndFilteredFiles = new HashSet<File>();
 
 		projectId++;
-		this.id = projectId;
-		this.dateCreated = new Date();
-		this.filterIn = "*";
-		this.filterOut = "";
-		this.chkptMsg = "New project : " + projectPath.toFile().getName();
+		id = projectId;
+		dateCreated = new Date();
+		filterIn = "*";
+		filterOut = "";
+		chkptMsg = "New project : " + projectPath.toFile().getName();
 		this.projectPath = projectPath;
-		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
-		this.workPath.toFile().mkdirs();
-		this.checkpointStack = new LinkedList<>();
-		this.fileSet = new FileList(this.projectPath).getResult();
-		this.filteredFileSet = new FileList(this.fileSet, this.filterIn + ",", "BAS-CheckPoints," + this.filterOut,
-				this.projectPath).getResult();
-		this.modFileSet = this.filteredFileSet;
-		this.state = this.getListFile();
+		workPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		workPath.toFile().mkdirs();
+		checkpointStack = new LinkedList<>();
+		fileSet = new FileList(projectPath).getResult();
+		filteredFileSet = new FileList(fileSet, filterIn + ",", "BAS-CheckPoints," + filterOut, projectPath)
+				.getResult();
+		modFileSet = filteredFileSet;
+		filesInProjectFolder = getListFile();
+		startAutoCommit();
 		setChanged();
 		notifyObservers();
 
 	}
 
+	/**
+	 * @param doc
+	 *            Document created with
+	 *            {@link com.bas.versions.xml.ProjectParser}
+	 */
 	public Project(Document doc) {
 
-		
-		this.newFiles = new HashSet<File>();
-		this.newAndFiltered = new HashSet<File>();
+		nonCommittedFiles = new HashSet<File>();
+		nonCommittedAndFilteredFiles = new HashSet<File>();
 
-		this.id = projectId;
-		this.dateCreated = new Date();
-		this.filterIn = "";
-		this.filterOut = "";
-		this.chkptMsg = "No message";
-		this.projectPath = null;
-		this.checkpointStack = new LinkedList<>();
-		this.fileSet = new HashSet<File>();
-		this.modFileSet = new HashSet<File>();
-		this.filteredFileSet = new HashSet<File>();
+		id = projectId;
+		dateCreated = new Date();
+		filterIn = "";
+		filterOut = "";
+		chkptMsg = "No message";
+		projectPath = null;
+		checkpointStack = new LinkedList<>();
+		fileSet = new HashSet<File>();
+		modFileSet = new HashSet<File>();
+		filteredFileSet = new HashSet<File>();
 
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -121,20 +130,19 @@ public class Project extends Observable {
 			builder.setErrorHandler(errHandler);
 
 			Element rootElt = doc.getDocumentElement();
-			this.id = Integer.valueOf(rootElt.getAttribute("pr_id"));
-			projectId = this.id;
+			id = Integer.valueOf(rootElt.getAttribute("pr_id"));
+			projectId = id;
 			try {
-				this.dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:'00'")
-						.parse(rootElt.getAttribute("pr_date"));
+				dateCreated = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:'00'").parse(rootElt.getAttribute("pr_date"));
 			} catch (ParseException e) {
 				SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, e.getMessage(),
 						"error in Project constructor", JOptionPane.ERROR_MESSAGE));
 				e.printStackTrace();
 			}
-			this.projectPath = Paths.get(rootElt.getAttribute("projectPath"));
+			projectPath = Paths.get(rootElt.getAttribute("projectPath"));
 
-			this.filterIn = rootElt.getElementsByTagName("filterIn").item(0).getTextContent();
-			this.filterOut = rootElt.getElementsByTagName("filterOut").item(0).getTextContent();
+			filterIn = rootElt.getElementsByTagName("filterIn").item(0).getTextContent();
+			filterOut = rootElt.getElementsByTagName("filterOut").item(0).getTextContent();
 
 			NodeList stack = rootElt.getElementsByTagName("checkpoint");
 			int nbChkpt = stack.getLength();
@@ -145,13 +153,13 @@ public class Project extends Observable {
 				Document tempDoc = builder.newDocument();
 				tempDoc.appendChild(tempDoc.importNode(cpElt, true));
 				CheckPoint cp = new CheckPoint(tempDoc);
-				this.getCheckPointStack().add(cp);
+				getCheckPointStack().add(cp);
 			}
 
 			NodeList state = rootElt.getElementsByTagName("stateFile");
 			int nbStateFile = state.getLength();
 			for (int j = 0; j < nbStateFile; j++) {
-				tempSet.add(new File(state.item(j).getTextContent()));
+				filesFromXml.add(new File(state.item(j).getTextContent()));
 			}
 
 		} catch (NumberFormatException | DOMException | ParserConfigurationException | SAXException e) {
@@ -159,27 +167,34 @@ public class Project extends Observable {
 					"error in Project constructor", JOptionPane.ERROR_MESSAGE));
 			e.printStackTrace();
 		}
-		CheckPoint.setVersionId(this.getCheckPointStack().peekLast().getId() + 1);
-		this.workPath = Paths.get(this.projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
-		this.state = new FileList(this.projectPath).getResult();
-		this.newFiles = this.state;
-		this.newFiles.removeAll(tempSet);
-		this.updateSets();
+		CheckPoint.setVersionId(getCheckPointStack().peekLast().getId() + 1);
+		workPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
+		filesInProjectFolder = new FileList(projectPath).getResult();
+		nonCommittedFiles = filesInProjectFolder;
+		nonCommittedFiles.removeAll(filesFromXml);
+		updateSets();
+		startAutoCommit();
 
-		this.setChanged();
-		this.notifyObservers();
+		setChanged();
+		notifyObservers();
 	}
 
-	public void commitCheckPoint() {
+	/**
+	 * Commits new CheckPoint to the workPath
+	 * 
+	 */
+	public void commitCheckPoint(boolean auto) {
+		CheckPoint newVers;
 
-		CheckPoint newVers = new CheckPoint(new Date(), this.projectPath, this.modFileSet, this.chkptMsg);
+		newVers = auto ? new CheckPoint(new Date(), projectPath, modFileSet, "Automatic commit")
+				: new CheckPoint(new Date(), projectPath, modFileSet, chkptMsg);
 		newVers.writeFiles();
-		this.checkpointStack.add(newVers);
-		this.state = new FileList(projectPath).getResult();
-		this.tempSet = this.state;
-		this.tempSet.removeIf(file -> newFiles.contains(file) && !modFileSet.contains(file));
-		this.newFiles.clear();
-		this.newAndFiltered.clear();
+		checkpointStack.add(newVers);
+		filesInProjectFolder = new FileList(projectPath).getResult();
+		filesFromXml = filesInProjectFolder;
+		filesFromXml.removeIf(file -> nonCommittedFiles.contains(file) && !modFileSet.contains(file));
+		nonCommittedFiles.clear();
+		nonCommittedAndFilteredFiles.clear();
 		XmlWriter xw = new XmlWriter();
 		xw.WriteProjectXml(this);
 		updateSets();
@@ -193,35 +208,66 @@ public class Project extends Observable {
 	public void updateSets() {
 
 		System.err.println(SwingUtilities.isEventDispatchThread());
-
-		Project.this.fileSet = new FileList(Project.this.projectPath).getResult();
-
-		Project.this.filteredFileSet = new FileList(Project.this.fileSet, Project.this.filterIn + ",",
-				"BAS-CheckPoints," + Project.this.filterOut, Project.this.projectPath).getResult();
-
-		if (Project.this.getCheckPointStack().peekLast() == null) {
-			Project.this.modFileSet = Project.this.filteredFileSet;
+		fileSet = new FileList(projectPath).getResult();
+		filteredFileSet = new FileList(fileSet, filterIn + ",", "BAS-CheckPoints," + filterOut, projectPath)
+				.getResult();
+		if (getCheckPointStack().peekLast() == null) {
+			modFileSet = filteredFileSet;
 		} else {
-			Project.this.modFileSet = new FileList(Project.this.filteredFileSet,
-					Project.this.getCheckPointStack().peekLast().getDateCreated()).getResult();
-			if (!Project.this.newFiles.isEmpty()) {
-				newAndFiltered = new FileList(Project.this.newFiles, Project.this.filterIn + ",",
-						"BAS-CheckPoints," + Project.this.filterOut, Project.this.projectPath).getResult();
+			modFileSet = new FileList(filteredFileSet, getCheckPointStack().peekLast().getDateCreated()).getResult();
+			if (!nonCommittedFiles.isEmpty()) {
+				nonCommittedAndFilteredFiles = new FileList(nonCommittedFiles, filterIn + ",",
+						"BAS-CheckPoints," + filterOut, projectPath).getResult();
 			}
-			if (!Project.this.newAndFiltered.isEmpty()) {
-				Project.this.newAndFiltered.forEach(Project.this.modFileSet::add);
+			if (!nonCommittedAndFilteredFiles.isEmpty()) {
+				nonCommittedAndFilteredFiles.forEach(modFileSet::add);
 			}
 		}
-
 	}
 
+	/**
+	 * Rescans the project folder to acknowledge changes
+	 */
 	public void reScan() {
-		this.state = new FileList(this.projectPath).getResult();
-		this.newFiles = this.state;
-		this.newFiles.removeAll(tempSet);
-		this.updateSets();
+		filesInProjectFolder = new FileList(projectPath).getResult();
+		nonCommittedFiles = filesInProjectFolder;
+		nonCommittedFiles.removeAll(filesFromXml);
+		updateSets();
 		setChanged();
 		notifyObservers();
+	}
+
+	public void  startAutoCommit() {
+
+		Thread autoCommitThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						Thread.sleep(1);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+					if (isAutoCommit() && !modFileSet.isEmpty()) {
+						System.err.println("autocommit is " + autoCommit);
+						System.err.println("modFileSet : " + modFileSet.toString());
+						System.err.println("Auto committing");
+						try {
+							Thread.sleep(waitTime);
+						} catch (InterruptedException e) {
+							log("####Error###");
+							log(e.getMessage());
+							e.printStackTrace();
+						}
+						commitCheckPoint(true);
+					}
+					autoCommit = isAutoCommit();
+				}
+			}
+		});
+
+		autoCommitThread.start();
+
 	}
 
 	// {{{ Getters/Setters
@@ -231,14 +277,6 @@ public class Project extends Observable {
 	 */
 	public static int getProjectId() {
 		return projectId;
-	}
-
-	/**
-	 * @param projectId
-	 *            the projectId to set
-	 */
-	public static void setProjectId(int projectId) {
-		Project.projectId = projectId;
 	}
 
 	/**
@@ -253,14 +291,14 @@ public class Project extends Observable {
 	 *            the id to set
 	 */
 	public void setId(int id) {
-		this.id = id;
+		id = this.id;
 	}
 
 	/**
 	 * @return the dateCreated
 	 */
 	public Date getDateCreated() {
-		return dateCreated;
+		return this.dateCreated;
 	}
 
 	/**
@@ -268,14 +306,14 @@ public class Project extends Observable {
 	 *            the dateCreated to set
 	 */
 	public void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
+		dateCreated = this.dateCreated;
 	}
 
 	/**
 	 * @return the filterIn
 	 */
 	public String getFilterIn() {
-		return filterIn;
+		return this.filterIn;
 	}
 
 	/**
@@ -283,17 +321,16 @@ public class Project extends Observable {
 	 *            the filterIn to set
 	 */
 	public void setFilterIn(String filterIn) {
-		this.filterIn = filterIn;
-		this.updateSets();
-		this.setChanged();
-		this.notifyObservers();
+		filterIn = this.filterIn;
+		updateSets();
+
 	}
 
 	/**
 	 * @return the filterOut
 	 */
 	public String getFilterOut() {
-		return filterOut;
+		return this.filterOut;
 	}
 
 	/**
@@ -301,13 +338,12 @@ public class Project extends Observable {
 	 *            the filterOut to set
 	 */
 	public void setFilterOut(String filterOut) {
-		this.filterOut = filterOut;
-		this.updateSets();
-		this.setChanged();
-		this.notifyObservers();
+		filterOut = this.filterOut;
+		updateSets();
+
 	}
-	
-	public void setFilters(String filterIn, String filterOut){
+
+	public void setFilters(String filterIn, String filterOut) {
 		this.filterIn = filterIn;
 		this.filterOut = filterOut;
 	}
@@ -324,7 +360,7 @@ public class Project extends Observable {
 	 *            the projectPath to set
 	 */
 	public void setProjectPath(Path projectPath) {
-		this.projectPath = projectPath;
+		projectPath = this.projectPath;
 	}
 
 	/**
@@ -339,7 +375,7 @@ public class Project extends Observable {
 	 *            the versionPath to set
 	 */
 	public void setWorkPath(Path versionPath) {
-		this.workPath = versionPath;
+		workPath = versionPath;
 	}
 
 	/**
@@ -361,7 +397,7 @@ public class Project extends Observable {
 	 *            the listFile to set
 	 */
 	public void setListFile(Set<File> listFile) {
-		this.fileSet = listFile;
+		fileSet = listFile;
 	}
 
 	/**
@@ -376,7 +412,7 @@ public class Project extends Observable {
 	 *            the listModFile to set
 	 */
 	public void setListModFile(Set<File> listModFile) {
-		this.modFileSet = listModFile;
+		modFileSet = listModFile;
 	}
 
 	/**
@@ -391,7 +427,7 @@ public class Project extends Observable {
 	 *            the listFilteredFile to set
 	 */
 	public void setListFilteredFile(Set<File> listFilteredFile) {
-		this.filteredFileSet = listFilteredFile;
+		filteredFileSet = listFilteredFile;
 	}
 
 	/**
@@ -406,37 +442,82 @@ public class Project extends Observable {
 	 *            the versMsg to set
 	 */
 	public void setVersMsg(String versMsg) {
-		this.chkptMsg = versMsg;
+		chkptMsg = versMsg;
 	}
 
 	/**
-	 * @return the state
+	 * @return the filesInProjectFolder
 	 */
-	public Set<File> getState() {
-		return state;
+	public Set<File> getFilesInProjectFolder() {
+		return filesInProjectFolder;
 	}
 
 	/**
-	 * @param state
-	 *            the state to set
+	 * @param filesInProjectFolder
+	 *            the filesInProjectFolder to set
 	 */
-	public void setState(Set<File> state) {
-		this.state = state;
+	public void setFilesInProjectFolder(Set<File> state) {
+		state = this.filesInProjectFolder;
 	}
 
 	/**
-	 * @return the newFiles
+	 * @return the nonCommittedFiles
 	 */
-	public Set<File> getNewFiles() {
-		return newFiles;
+	public Set<File> getNonCommittedFiles() {
+		return this.nonCommittedFiles;
 	}
 
 	/**
-	 * @param newFiles
-	 *            the newFiles to set
+	 * @param nonCommittedFiles
+	 *            the nonCommittedFiles to set
 	 */
-	public void setNewFiles(Set<File> newFiles) {
-		this.newFiles = newFiles;
+	public void setNonCommittedFiles(Set<File> newFiles) {
+		newFiles = this.nonCommittedFiles;
+	}
+
+	/**
+	 * @return the filesFromXml
+	 */
+	public Set<File> getFilesFromXml() {
+		return this.filesFromXml;
+	}
+
+	/**
+	 * @param filesFromXml
+	 *            the filesFromXml to set
+	 */
+	public void setFilesFromXml(Set<File> tempSet) {
+		this.filesFromXml = tempSet;
+	}
+
+	/**
+	 * @return the autoCommit
+	 */
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
+
+	/**
+	 * @param autoCommit
+	 *            the autoCommit to set
+	 */
+	public void setAutoCommit(boolean autoCommit) {
+		this.autoCommit = autoCommit;
+	}
+
+	/**
+	 * @return the waitTime
+	 */
+	public long getWaitTime() {
+		return waitTime;
+	}
+
+	/**
+	 * @param waitTime
+	 *            the waitTime to set
+	 */
+	public void setWaitTime(long waitTime) {
+		this.waitTime = waitTime;
 	}
 
 	// }}}

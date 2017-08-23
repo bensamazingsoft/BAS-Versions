@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -36,11 +38,10 @@ import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.bas.versions.utils.BasProperties;
+import com.bas.versions.utils.CheckPoint;
 import com.bas.versions.utils.NightsWatcher;
 import com.bas.versions.utils.Project;
 import com.bas.versions.utils.ProjectRestorer;
@@ -85,14 +86,17 @@ public class MainPnl extends JPanel implements Observer {
 	private final JPanel panel_8 = new JPanel();
 	private final JButton restoreBut = new JButton("Restore Files");
 	private final JButton archiveBut = new JButton("Archive project");
+	private final JLabel autoCommiWaitTimeLbl = new JLabel("Auto commit every (ms)");
+	private final JCheckBox autoCommiWaitTimeCb = new JCheckBox("");
+	private final JTextField autoCommiWaitTimeTf = new JTextField();
+	private final JPanel panel_9 = new JPanel();
 
 	/**
 	 * Create the panel.
 	 */
 	public MainPnl() {
 
-		log("\n*********************************************************************" + "\nStarted " + new Date()
-				+ "\n");
+		log("\n*******************************************************" + "\nStarted " + new Date() + "\n");
 
 		config = new BasProperties();
 
@@ -255,23 +259,11 @@ public class MainPnl extends JPanel implements Observer {
 		panel_3.add(updateBut);
 		noFilterCb.setSelected(true);
 		noFilterCb.setEnabled(false);
-		noFilterCb.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
 
-				if (noFilterCb.isSelected()) {
-					MainPnl.this.project.setFilterIn("*");
-					project.setFilterOut("");
-					filterInTf.setEnabled(false);
-					filterOutTf.setEnabled(false);
-				}
+		noFilterCb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
 
-				if (!noFilterCb.isSelected()) {
-					MainPnl.this.project.setFilterIn(filterInTf.getText());
-					filterInTf.setEnabled(true);
-					filterOutTf.setEnabled(true);
-					MainPnl.this.project.setFilterOut(filterOutTf.getText());
-					MainPnl.this.project.reScan();
-				}
+				noFilterCbAction();
 			}
 
 		});
@@ -292,7 +284,7 @@ public class MainPnl extends JPanel implements Observer {
 				if (NightsWatcher.isPause()) {
 					NightsWatcher.setPause(false);
 					watchPauseBut.setText("Pause live update");
-					MainPnl.this.project.reScan();
+					project.reScan();
 					return;
 				}
 
@@ -304,21 +296,16 @@ public class MainPnl extends JPanel implements Observer {
 		panel4Files.setPreferredSize(new Dimension(300, 300));
 		panel4Files.setBorder(new TitledBorder(new CompoundBorder(null, UIManager.getBorder("CheckBoxMenuItem.border")),
 				"Files in project dir.", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		// panel_4.add(panel4Files, BorderLayout.WEST);
 		panel4Files.setLayout(new BorderLayout(0, 0));
-
 		panel4FilteredFiles.setPreferredSize(new Dimension(300, 300));
 		panel4FilteredFiles
 				.setBorder(new TitledBorder(new CompoundBorder(null, UIManager.getBorder("CheckBoxMenuItem.border")),
 						"Filtered files", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		// panel_4.add(panel4FilteredFiles, BorderLayout.CENTER);
 		panel4FilteredFiles.setLayout(new BorderLayout(0, 0));
-
 		panel4ModFiles.setPreferredSize(new Dimension(300, 300));
 		panel4ModFiles.setBorder(new TitledBorder(
 				new CompoundBorder(null, UIManager.getBorder("CheckBoxMenuItem.border")),
 				"New or modified filtered files", TitledBorder.CENTER, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		// panel_4.add(panel4ModFiles, BorderLayout.EAST);
 		panel4ModFiles.setLayout(new BorderLayout(0, 0));
 
 		JPanel panel_4 = new JPanel();
@@ -348,8 +335,28 @@ public class MainPnl extends JPanel implements Observer {
 				commit();
 			}
 		});
+		commitButtPnl.setLayout(new BoxLayout(commitButtPnl, BoxLayout.Y_AXIS));
 
 		commitButtPnl.add(createChkptBut);
+		
+		commitButtPnl.add(panel_9);
+		autoCommiWaitTimeCb.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				autoCommiWaitTimeCbAction();
+			}
+		});
+		panel_9.add(autoCommiWaitTimeCb);
+		autoCommiWaitTimeLbl.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				autoCommiWaitTimeCb.setSelected(!autoCommiWaitTimeCb.isSelected());
+				autoCommiWaitTimeCbAction();
+			}
+		});
+		panel_9.add(autoCommiWaitTimeLbl);
+		autoCommiWaitTimeTf.setText("10000");
+		panel_9.add(autoCommiWaitTimeTf);
+		autoCommiWaitTimeTf.setColumns(10);
 
 		JPanel msgPnl = new JPanel();
 		FlowLayout fl_msgPnl = (FlowLayout) msgPnl.getLayout();
@@ -385,7 +392,7 @@ public class MainPnl extends JPanel implements Observer {
 		restoreBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				@SuppressWarnings("unused")
-				RestoreFrame rf = new RestoreFrame(MainPnl.this.project);
+				RestoreFrame rf = new RestoreFrame(project);
 			}
 		});
 
@@ -401,6 +408,17 @@ public class MainPnl extends JPanel implements Observer {
 
 	}
 
+	protected void autoCommiWaitTimeCbAction() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				project.setAutoCommit(autoCommiWaitTimeCb.isSelected());
+				project.setWaitTime(Long.valueOf(autoCommiWaitTimeTf.getText()));
+			}
+		}).start();
+		
+	}
+
 	protected void archiveAction() {
 
 		final int result = archiveJFC.showOpenDialog(getParent());
@@ -410,13 +428,13 @@ public class MainPnl extends JPanel implements Observer {
 			public void run() {
 				if (result == JFileChooser.APPROVE_OPTION) {
 
-					log("Started archiving project in folder : " + archiveJFC.getSelectedFile().getAbsolutePath()
+					log("Started archiving project in folder : " + archiveJFC.getSelectedFile().getAbsolutePath() + " "
 							+ new Date());
 
+					project.getCheckPointStack().peekLast();
 					ProjectRestorer pr = new ProjectRestorer(project, archiveJFC.getSelectedFile().toPath(),
-							MainPnl.this.project.getCheckPointStack().peekLast().getCheckPointId());
+							CheckPoint.getCheckPointId());
 					pr.restoreFiles();
-					
 
 				}
 			}
@@ -429,16 +447,16 @@ public class MainPnl extends JPanel implements Observer {
 			@Override
 			public void run() {
 				if (!noFilterCb.isSelected()) {
-					MainPnl.this.project.setFilters(filterInTf.getText(), filterOutTf.getText());
+					project.setFilters(filterInTf.getText(), filterOutTf.getText());
 				}
-				MainPnl.this.project.reScan();
+				project.reScan();
 			}
 		}).start();
 	}
 
 	protected void commit() {
 
-		log("Committed checkPoint" + new Date());
+		log("Committed checkPoint " + new Date());
 
 		new Thread(new Runnable() {
 
@@ -452,8 +470,8 @@ public class MainPnl extends JPanel implements Observer {
 				}
 
 				if (info == JOptionPane.OK_OPTION) {
-					MainPnl.this.project.setVersMsg(msgTp.getText());
-					MainPnl.this.project.commitCheckPoint();
+					project.setVersMsg(msgTp.getText());
+					project.commitCheckPoint(false);
 					lastChkptIndicLbl.setText("Last checkpoint :");
 					chkptDateIndicLbl.setText("created : ");
 					msgTp.setText("");
@@ -469,8 +487,8 @@ public class MainPnl extends JPanel implements Observer {
 
 	protected void chooseNew() {
 
-		log("New Project created" + new Date());
-
+		log("New Project created " + new Date());
+		log("\n********************************************");
 		final int result = newJfc.showOpenDialog(getParent());
 
 		new Thread(new Runnable() {
@@ -479,10 +497,9 @@ public class MainPnl extends JPanel implements Observer {
 				if (result == JFileChooser.APPROVE_OPTION) {
 
 					initPanel(new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath())));
-					MainPnl.this.project.addObserver(MainPnl.this);
+					project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
-					config.getProp().setProperty("lastPath",
-							MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
 					config.updateConf();
 
 				}
@@ -493,8 +510,8 @@ public class MainPnl extends JPanel implements Observer {
 
 	public void loadProject() {
 
-		log("Project Loaded" + new Date());
-
+		log("Project Loaded " + new Date());
+		log("\n********************************************");
 		final int result = loadJfc.showOpenDialog(getParent());
 
 		new Thread(new Runnable() {
@@ -503,10 +520,9 @@ public class MainPnl extends JPanel implements Observer {
 				if (result == JFileChooser.APPROVE_OPTION) {
 
 					initPanel(new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc()));
-					MainPnl.this.project.addObserver(MainPnl.this);
+					project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
-					config.getProp().setProperty("lastPath",
-							MainPnl.this.project.getProjectPath().toFile().getAbsolutePath());
+					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
 					config.updateConf();
 					restoreBut.setEnabled(true);
 					archiveBut.setEnabled(true);
@@ -523,34 +539,31 @@ public class MainPnl extends JPanel implements Observer {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				jon = new NightsWatcher(MainPnl.this.project);
+				jon = new NightsWatcher(project);
 			}
 		}).start();
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				watchPauseBut.setEnabled(true);
-				projectLbl.setText("/" + MainPnl.this.project.getProjectPath().toFile().getName() + "/");
-				projectDirLbl.setText("Created : " + MainPnl.this.project.getDateCreated());
+				projectLbl.setText("/" + project.getProjectPath().toFile().getName() + "/");
+				projectDirLbl.setText("Created : " + project.getDateCreated());
 				if (project.getCheckPointStack().peekLast() != null) {
 					lastChkptIndicLbl.setText("Last checkpoint :");
 					chkptDateIndicLbl.setText("created : ");
 				}
-				filterInTf.setText(MainPnl.this.project.getFilterIn());
-				filterOutTf.setText(MainPnl.this.project.getFilterOut());
-				panel4Files
-						.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
-				panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
-						MainPnl.this.project.getListFilteredFile()));
-				panel4ModFiles.add(
-						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
-				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
-					chkptDateLbl.setText(
-							MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
+				filterInTf.setText(project.getFilterIn());
+				filterOutTf.setText(project.getFilterOut());
+				panel4Files.add(new BasJTree(project.getProjectPath(), project.getListFile()));
+				panel4FilteredFiles.add(new BasJTree(project.getProjectPath(), project.getListFilteredFile()));
+				panel4ModFiles.add(new BasJTree(project.getProjectPath(), project.getListModFile()));
+				if (project.getCheckPointStack().peekLast() != null) {
+					lastChkptLbl.setText(project.getCheckPointStack().peekLast().toString().trim());
+					chkptDateLbl.setText(project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
 
 				createChkptBut.setEnabled(true);
 				noFilterCb.setEnabled(true);
+				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime()));
 				revalidate();
 				repaint();
 			}
@@ -567,21 +580,41 @@ public class MainPnl extends JPanel implements Observer {
 				panel4Files.removeAll();
 				panel4FilteredFiles.removeAll();
 				panel4ModFiles.removeAll();
-				panel4Files
-						.add(new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListFile()));
-				panel4FilteredFiles.add(new BasJTree(MainPnl.this.project.getProjectPath(),
-						MainPnl.this.project.getListFilteredFile()));
-				panel4ModFiles.add(
-						new BasJTree(MainPnl.this.project.getProjectPath(), MainPnl.this.project.getListModFile()));
-				if (MainPnl.this.project.getCheckPointStack().peekLast() != null) {
-					lastChkptLbl.setText(MainPnl.this.project.getCheckPointStack().peekLast().toString().trim());
-					chkptDateLbl.setText(
-							MainPnl.this.project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
+				panel4Files.add(new BasJTree(project.getProjectPath(), project.getListFile()));
+				panel4FilteredFiles.add(new BasJTree(project.getProjectPath(), project.getListFilteredFile()));
+				panel4ModFiles.add(new BasJTree(project.getProjectPath(), project.getListModFile()));
+				if (project.getCheckPointStack().peekLast() != null) {
+					lastChkptLbl.setText(project.getCheckPointStack().peekLast().toString().trim());
+					chkptDateLbl.setText(project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
+				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime()));
 				revalidate();
 				repaint();
 			}
 		});
 
+	}
+
+	/**
+	 * 
+	 */
+	public void noFilterCbAction() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				if (noFilterCb.isSelected()) {
+					project.setFilters("*", "");
+					filterInTf.setEnabled(false);
+					filterOutTf.setEnabled(false);
+					project.reScan();
+				}
+				if (!noFilterCb.isSelected()) {
+					project.setFilters(filterInTf.getText(), filterOutTf.getText());
+					filterInTf.setEnabled(true);
+					filterOutTf.setEnabled(true);
+					project.reScan();
+				}
+			}
+		}).start();
 	}
 }

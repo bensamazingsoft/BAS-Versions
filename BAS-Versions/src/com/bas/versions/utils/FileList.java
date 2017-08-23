@@ -101,7 +101,7 @@ public class FileList extends Observable {
 		String pathName = projectPath.toFile().getAbsolutePath();
 
 		pgBar = new BasProgressBar("Filtering Files ", setFile.size());
-		this.addObserver(pgBar);
+		addObserver(pgBar);
 		pgBar.setVisible(true);
 
 		int i = 0;
