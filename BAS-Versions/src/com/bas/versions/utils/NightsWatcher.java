@@ -42,12 +42,12 @@ public class NightsWatcher {
 		}
 
 		for (;;) {
-				try {
-					key = watcher.take();
-				} catch (InterruptedException e) {
-					return;
-				}
-				if (!pause) {
+			try {
+				key = watcher.take();
+			} catch (InterruptedException e) {
+				return;
+			}
+			if (!pause) {
 
 				for (WatchEvent<?> event : key.pollEvents()) {
 
@@ -70,8 +70,10 @@ public class NightsWatcher {
 					Path trigPath = ((Path) key.watchable()).resolve(pathEvent.context());
 					if (trigPath.toFile().isDirectory() && !(trigPath.startsWith(project.getWorkPath()))) {
 						try {
-							trigPath.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
-									StandardWatchEventKinds.ENTRY_MODIFY);
+							registerPaths();
+							// trigPath.register(watcher,
+							// StandardWatchEventKinds.ENTRY_CREATE,
+							// StandardWatchEventKinds.ENTRY_MODIFY);
 							log("Watch Service : registered folder : " + pathEvent.context().toString());
 						} catch (IOException e) {
 							JOptionPane.showMessageDialog(null, e.getMessage(),
@@ -91,7 +93,7 @@ public class NightsWatcher {
 					}
 				}
 			}
-				pause = isPause();
+			pause = isPause();
 		}
 	}
 
@@ -113,6 +115,7 @@ public class NightsWatcher {
 					WatchKey wk = file.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
 							StandardWatchEventKinds.ENTRY_MODIFY);
 					log("\t registered : " + file.toFile().getAbsolutePath());
+					System.out.println("\t registered : " + file.toFile().getAbsolutePath());
 				}
 				return FileVisitResult.CONTINUE;
 			}

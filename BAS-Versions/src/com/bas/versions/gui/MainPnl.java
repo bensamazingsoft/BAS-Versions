@@ -215,7 +215,10 @@ public class MainPnl extends JPanel implements Observer {
 				}
 
 				if (filterInTf.getText().contains("/") || filterInTf.getText().contains("\\")) {
-					filterInTf.setText(filterInTf.getText().replaceAll("(\\\\?)|(/?)", ""));
+					filterInTf.setText(filterInTf.getText().replaceAll("(\\\\?)(/?)", ""));
+					if (filterInTf.getText().length() == 0) {
+						filterInTf.setText(project.getFilterIn());
+					}
 					JOptionPane.showMessageDialog(null, "Can't have \"/\" or \"\\\" in filters", "error",
 							JOptionPane.ERROR_MESSAGE);
 				}
@@ -239,7 +242,7 @@ public class MainPnl extends JPanel implements Observer {
 			@Override
 			public void focusLost(FocusEvent e) {
 				if (filterOutTf.getText().contains("/") || filterOutTf.getText().contains("\\")) {
-					filterOutTf.setText(filterOutTf.getText().replaceAll("(\\\\?)|(/?)", ""));
+					filterOutTf.setText(filterOutTf.getText().replaceAll("(\\\\?)(/?)", ""));
 					JOptionPane.showMessageDialog(null, "Can't have \"/\" or \"\\\" in filters", "error",
 							JOptionPane.ERROR_MESSAGE);
 				}
@@ -247,6 +250,9 @@ public class MainPnl extends JPanel implements Observer {
 		});
 		panel_3.add(filterOutTf);
 		filterOutTf.setColumns(25);
+
+		filterOutTf.setEnabled(false);
+		filterInTf.setEnabled(false);
 		updateBut.setToolTipText(
 				"<html><p>Update file lists according to filters</p>\r\n</br>\r\n<p> Filter IN sets wich files to include in checkpoint</p>\r\n<p>Filter Out sets wich files to exclude of checkpoint</p>\r\n</br>\r\n<p>Filters are Case Insensitive</p>\r\n");
 		updateBut.setMnemonic('u');
@@ -355,6 +361,18 @@ public class MainPnl extends JPanel implements Observer {
 			}
 		});
 		panel_9.add(autoCommiWaitTimeLbl);
+		autoCommiWaitTimeTf.addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent arg0) {
+				checkForLong();
+			}
+		});
+
+		autoCommiWaitTimeTf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				checkForLong();
+			}
+		});
 		autoCommiWaitTimeTf.setText("20");
 		panel_9.add(autoCommiWaitTimeTf);
 		autoCommiWaitTimeTf.setColumns(10);
@@ -406,6 +424,21 @@ public class MainPnl extends JPanel implements Observer {
 
 		archiveBut.setEnabled(false);
 		panel_8.add(archiveBut);
+
+	}
+
+	protected void checkForLong() {
+		if (!autoCommiWaitTimeTf.getText().isEmpty()) {
+			String text = autoCommiWaitTimeTf.getText();
+
+			try {
+				Long.parseLong(text);
+			} catch (NumberFormatException e) {
+				JOptionPane.showMessageDialog(this, "Enter integer number for wait time (Ex '20')", "error",
+						JOptionPane.ERROR_MESSAGE);
+				autoCommiWaitTimeTf.setText("20");
+			}
+		}
 
 	}
 

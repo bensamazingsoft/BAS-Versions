@@ -52,7 +52,7 @@ public class Project extends Observable {
 	Set<File> nonCommittedAndFilteredFiles;
 	Set<File> filesFromXml = new HashSet<File>();
 	private volatile boolean autoCommit;
-	protected long waitTime = 1200000;
+	protected volatile long waitTime;
 	Thread autoCommitThread;
 
 	public Project() {
@@ -238,18 +238,14 @@ public class Project extends Observable {
 		notifyObservers();
 	}
 
-	public void  startAutoCommit() {
+	public void startAutoCommit() {
 
 		autoCommitThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (true) {			
-					
-					if(Thread.interrupted()){
-						System.out.println("AutoCommit interruted");
-						return;
-					}
-					
+				System.err.println("starting auto commit");
+				while (true) {
+
 					log("Performing AutoCommit " + new Date());
 					try {
 						Thread.sleep(waitTime);
@@ -263,8 +259,7 @@ public class Project extends Observable {
 					}
 					autoCommit = isAutoCommit();
 				}
-				
-	
+
 			}
 		});
 
@@ -504,6 +499,7 @@ public class Project extends Observable {
 	 *            the autoCommit to set
 	 */
 	public void setAutoCommit(boolean autoCommit) {
+		System.err.println("autocommit set to " + autoCommit);
 		this.autoCommit = autoCommit;
 	}
 
@@ -524,7 +520,7 @@ public class Project extends Observable {
 
 	public void stopAutoCommit() {
 		autoCommitThread.interrupt();
-		
+
 	}
 
 	// }}}
