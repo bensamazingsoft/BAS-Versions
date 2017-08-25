@@ -14996,3 +14996,510 @@ Watch Service : registering paths
 	 registered : E:\projet\Nouveau dossier\Nouveau dossier
 	 registered : E:\projet\Nouveau dossier
 	 registered : E:\projet
+
+*******************************************************
+Started Wed Aug 23 17:03:39 CEST 2017
+
+Project Loaded Wed Aug 23 17:03:45 CEST 2017
+
+********************************************
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 10:45:57 CEST 2017
+
+Project Loaded Fri Aug 25 10:45:59 CEST 2017
+
+********************************************
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+Performing AutoCommit Fri Aug 25 10:46:08 CEST 2017
+Performing AutoCommit Fri Aug 25 10:46:52 CEST 2017
+Performing AutoCommit Fri Aug 25 10:47:26 CEST 2017
+Performing AutoCommit Fri Aug 25 10:47:51 CEST 2017
+
+*******************************************************
+Started Fri Aug 25 10:50:10 CEST 2017
+
+Project Loaded Fri Aug 25 10:50:13 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 10:50:16 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+Performing AutoCommit Fri Aug 25 10:50:26 CEST 2017
+Performing AutoCommit Fri Aug 25 10:50:36 CEST 2017
+Performing AutoCommit Fri Aug 25 10:50:46 CEST 2017
+Performing AutoCommit Fri Aug 25 10:50:56 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:06 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:16 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:26 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:37 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:47 CEST 2017
+Performing AutoCommit Fri Aug 25 10:51:57 CEST 2017
+Performing AutoCommit Fri Aug 25 10:52:07 CEST 2017
+Performing AutoCommit Fri Aug 25 10:52:17 CEST 2017
+Performing AutoCommit Fri Aug 25 10:52:27 CEST 2017
+Started archiving project in folder : C:\Users\ben\Desktop\restoration Fri Aug 25 10:52:34 CEST 2017
+Start restore process 
+	restored file : Nouveau document texte (46) - Copie - Copie.txt
+	restored file : Nouveau document texte (52) - Copie.txt
+	restored file : Nouveau document texte (10) - Copie.txt
+	restored file : Nouveau document texte (54) - Copie.txt
+	restored file : Nouveau document texte (12).txt
+	restored file : Nouveau document texte (2) - Copie.txt
+	restored file : Nouveau document texte (37) - Copie.txt
+	restored file : Nouveau document texte (50) - Copie - Copie.txt
+	restored file : Nouveau document texte (2).txt
+	restored file : Nouveau document texte (60) - Copie.txt
+	restored file : Nouveau document texte (58) - Copie.txt
+	restored file : Nouveau document texte (12) - Copie.txt
+	restored file : Nouveau document texte (56) - Copie.txt
+	restored file : Nouveau document texte (39) - Copie.txt
+	restored file : Nouveau document texte - Copie.txt
+	restored file : Nouveau document texte (50) - Copie.txt
+	restored file : Nouveau document texte (18) - Copie.txt
+	restored file : Nouveau document texte (14) - Copie.txt
+	restored file : Nouveau document texte - Copie (3).txt
+	restored file : Nouveau document texte (10).txt
+	restored file : Nouveau document texte (31) - Copie.txt
+	restored file : Nouveau document texte (42) - Copie - Copie.txt
+	restored file : Nouveau document texte (47) - Copie - Copie.txt
+	restored file : Nouveau document texte (35) - Copie.txt
+	restored file : Nouveau document texte (33) - Copie.txt
+	restored file : Nouveau document texte (16) - Copie.txt
+	restored file : Nouveau document texte - Copie (2).txt
+	restored file : Nouveau document texte - Copie (6).txt
+	restored file : Nouveau document texte (6).txt
+	restored file : Nouveau document texte (28) - Copie.txt
+	restored file : Nouveau document texte (29) - Copie.txt
+	restored file : Nouveau document texte (45) - Copie - Copie.txt
+	restored file : Nouveau document texte (7).txt
+	restored file : Nouveau document texte (9) - Copie.txt
+	restored file : Nouveau document texte - Copie (4).txt
+	restored file : Nouveau document texte (42) - Copie.txt
+	restored file : Nouveau document texte (13).txt
+	restored file : Nouveau document texte (48) - Copie - Copie.txt
+	restored file : Nouveau document texte (24) - Copie.txt
+	restored file : Nouveau document texte (23) - Copie.txt
+	restored file : Nouveau document texte (22) - Copie.txt
+	restored file : Nouveau document texte (27) - Copie.txt
+	restored file : Nouveau document texte (40) - Copie.txt
+	restored file : Nouveau document texte (26) - Copie.txt
+	restored file : Nouveau document texte (11).txt
+	restored file : Nouveau document texte (25) - Copie.txt
+	restored file : Nouveau document texte (55) - Copie.txt
+	restored file : Nouveau document texte (53) - Copie.txt
+	restored file : Nouveau document texte (36) - Copie.txt
+	restored file : Nouveau document texte (8).txt
+	restored file : Nouveau document texte (57) - Copie.txt
+	restored file : Nouveau document texte (61) - Copie.txt
+	restored file : Nouveau document texte (4).txt
+	restored file : Nouveau document texte (38) - Copie.txt
+	restored file : Nouveau document texte (5).txt
+	restored file : Nouveau document texte (17) - Copie.txt
+	restored file : Nouveau document texte (51) - Copie.txt
+	restored file : Nouveau document texte - Copie (5).txt
+	restored file : Nouveau document texte (19) - Copie.txt
+	restored file : Nouveau document texte (9).txt
+	restored file : Nouveau document texte (13) - Copie.txt
+	restored file : Nouveau document texte (44) - Copie - Copie.txt
+	restored file : Nouveau document texte (32) - Copie.txt
+	restored file : Nouveau document texte (30) - Copie.txt
+	restored file : Nouveau document texte (49) - Copie - Copie.txt
+	restored file : Nouveau document texte (34) - Copie.txt
+	restored file : Nouveau document texte (15) - Copie.txt
+	restored file : Nouveau document texte (11) - Copie.txt
+	restored file : Nouveau document texte (3).txt
+	restored file : Nouveau document texte (46) - Copie.txt
+	restored file : Nouveau document texte (21) - Copie.txt
+	restored file : Nouveau document texte (48) - Copie.txt
+	restored file : Nouveau document texte (20) - Copie.txt
+	restored file : Nouveau document texte (47) - Copie.txt
+	restored file : Nouveau document texte (6) - Copie.txt
+	restored file : Nouveau document texte (45) - Copie.txt
+	restored file : Nouveau document texte (49) - Copie.txt
+	restored file : Nouveau document texte (44) - Copie.txt
+	restored file : Nouveau document texte (8) - Copie.txt
+	restored file : Nouveau document texte (7) - Copie.txt
+	restored file : Nouveau document texte.txt
+	restored file : Nouveau document texte (43) - Copie - Copie.txt
+	restored file : Nouveau document texte (41) - Copie.txt
+	restored file : Nouveau document texte (5) - Copie.txt
+	restored file : Nouveau document texte (59) - Copie.txt
+	restored file : Nouveau document texte (3) - Copie.txt
+	restored file : Nouveau document texte (43) - Copie.txt
+	restored file : Nouveau document texte (4) - Copie.txt
+Performing AutoCommit Fri Aug 25 10:52:37 CEST 2017
+
+*******************************************************
+Started Fri Aug 25 11:15:15 CEST 2017
+
+Project Loaded Fri Aug 25 11:15:18 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:15:24 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 11:15:42 CEST 2017
+
+Project Loaded Fri Aug 25 11:15:44 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:15:46 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 11:17:12 CEST 2017
+
+Project Loaded Fri Aug 25 11:17:14 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:17:16 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 11:17:29 CEST 2017
+
+Project Loaded Fri Aug 25 11:17:32 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:17:34 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:17:38 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:17:42 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration\fff
+	 registered : C:\Users\ben\Desktop\restoration\jpegeu
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Saves
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 11:17:57 CEST 2017
+
+********************************************
+
+*******************************************************
+Started Fri Aug 25 11:18:05 CEST 2017
+
+Project Loaded Fri Aug 25 11:18:08 CEST 2017
+
+********************************************
+Project Loaded Fri Aug 25 11:18:30 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:18:39 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 11:24:44 CEST 2017
+
+Project Loaded Fri Aug 25 11:24:45 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:24:48 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:24:51 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:24:55 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration\fff
+	 registered : C:\Users\ben\Desktop\restoration\jpegeu
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Saves
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 11:27:14 CEST 2017
+
+Project Loaded Fri Aug 25 11:27:18 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:27:27 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:27:29 CEST 2017
+
+********************************************
+Started watch service
+Watch Service : registering paths
+Performing AutoCommit Fri Aug 25 11:27:33 CEST 2017
+	 registered : C:\Users\ben\Desktop\restoration\fff
+	 registered : C:\Users\ben\Desktop\restoration\jpegeu
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Saves
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 11:49:20 CEST 2017
+
+Project Loaded Fri Aug 25 11:49:22 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:49:37 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:49:41 CEST 2017
+
+********************************************
+sleep interrupted
+Performing AutoCommit Fri Aug 25 11:49:45 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration\fff
+	 registered : C:\Users\ben\Desktop\restoration\jpegeu
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Nouveau dossier
+	 registered : C:\Users\ben\Desktop\restoration\Saves
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 11:52:32 CEST 2017
+
+Project Loaded Fri Aug 25 11:52:36 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:52:47 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:52:54 CEST 2017
+
+********************************************
+sleep interrupted
+Started watch service
+Performing AutoCommit Fri Aug 25 11:52:59 CEST 2017
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 11:55:26 CEST 2017
+
+New Project created Fri Aug 25 11:55:27 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:55:31 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 11:55:37 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 11:55:47 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 11:55:57 CEST 2017
+
+********************************************
+sleep interrupted
+Performing AutoCommit Fri Aug 25 11:56:03 CEST 2017
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Committed checkPoint Fri Aug 25 11:56:47 CEST 2017
+
+*******************************************************
+Started Fri Aug 25 12:01:18 CEST 2017
+
+Project Loaded Fri Aug 25 12:01:20 CEST 2017
+
+********************************************
+Project Loaded Fri Aug 25 12:01:27 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:01:36 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 12:01:43 CEST 2017
+
+********************************************
+sleep interrupted
+Performing AutoCommit Fri Aug 25 12:02:18 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 12:05:38 CEST 2017
+
+Project Loaded Fri Aug 25 12:05:42 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:05:44 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 12:05:46 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:05:57 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 12:06:02 CEST 2017
+
+********************************************
+sleep interrupted
+
+*******************************************************
+Started Fri Aug 25 12:06:06 CEST 2017
+
+Performing AutoCommit Fri Aug 25 12:06:06 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+
+*******************************************************
+Started Fri Aug 25 12:09:00 CEST 2017
+
+Project Loaded Fri Aug 25 12:09:02 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:09:03 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 12:09:06 CEST 2017
+
+********************************************
+Started watch service
+Performing AutoCommit Fri Aug 25 12:09:14 CEST 2017
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 12:09:17 CEST 2017
+
+********************************************
+sleep interrupted
+Performing AutoCommit Fri Aug 25 12:09:23 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 12:09:43 CEST 2017
+
+********************************************
+Started watch service
+Watch Service : registering paths
+Performing AutoCommit Fri Aug 25 12:09:46 CEST 2017
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+
+*******************************************************
+Started Fri Aug 25 12:10:24 CEST 2017
+
+
+*******************************************************
+Started Fri Aug 25 12:11:22 CEST 2017
+
+Project Loaded Fri Aug 25 12:11:24 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:11:26 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+New Project created Fri Aug 25 12:11:32 CEST 2017
+
+********************************************
+New Project created Fri Aug 25 12:11:41 CEST 2017
+
+********************************************
+Project Loaded Fri Aug 25 12:11:44 CEST 2017
+
+********************************************
+New Project created Fri Aug 25 12:11:47 CEST 2017
+
+********************************************
+sleep interrupted
+Performing AutoCommit Fri Aug 25 12:11:53 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : C:\Users\ben\Desktop\restoration
+Project Loaded Fri Aug 25 12:11:56 CEST 2017
+
+********************************************
+
+*******************************************************
+Started Fri Aug 25 12:12:43 CEST 2017
+
+Project Loaded Fri Aug 25 12:13:21 CEST 2017
+
+********************************************
+New Project created Fri Aug 25 12:13:25 CEST 2017
+
+********************************************
+Project Loaded Fri Aug 25 12:13:30 CEST 2017
+
+********************************************
+Performing AutoCommit Fri Aug 25 12:13:42 CEST 2017
+Started watch service
+Watch Service : registering paths
+	 registered : E:\projet\Nouveau dossier\Nouveau dossier
+	 registered : E:\projet\Nouveau dossier
+	 registered : E:\projet
+Project Loaded Fri Aug 25 12:13:46 CEST 2017
+
+********************************************
+New Project created Fri Aug 25 12:13:48 CEST 2017
+
+********************************************

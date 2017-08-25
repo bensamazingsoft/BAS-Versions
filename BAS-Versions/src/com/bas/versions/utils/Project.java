@@ -51,8 +51,9 @@ public class Project extends Observable {
 	private Set<File> nonCommittedFiles;
 	Set<File> nonCommittedAndFilteredFiles;
 	Set<File> filesFromXml = new HashSet<File>();
-	private boolean autoCommit;
-	protected long waitTime = 10000;
+	private volatile boolean autoCommit;
+	protected long waitTime = 1200000;
+	Thread autoCommitThread;
 
 	public Project() {
 
@@ -167,7 +168,7 @@ public class Project extends Observable {
 					"error in Project constructor", JOptionPane.ERROR_MESSAGE));
 			e.printStackTrace();
 		}
-		CheckPoint.setVersionId(getCheckPointStack().peekLast().getId() + 1);
+		CheckPoint.setCheckPointId(getCheckPointStack().peekLast().getId() + 1);
 		workPath = Paths.get(projectPath.toFile().getAbsolutePath() + "\\BAS-CheckPoints");
 		filesInProjectFolder = new FileList(projectPath).getResult();
 		nonCommittedFiles = filesInProjectFolder;
@@ -239,30 +240,31 @@ public class Project extends Observable {
 
 	public void  startAutoCommit() {
 
-		Thread autoCommitThread = new Thread(new Runnable() {
+		autoCommitThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (true) {
+				while (true) {			
+					
+					if(Thread.interrupted()){
+						System.out.println("AutoCommit interruted");
+						return;
+					}
+					
+					log("Performing AutoCommit " + new Date());
 					try {
-						Thread.sleep(1);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
+						Thread.sleep(waitTime);
+					} catch (InterruptedException e) {
+						log(e.getMessage());
+						e.printStackTrace();
+						return;
 					}
 					if (isAutoCommit() && !modFileSet.isEmpty()) {
-						System.err.println("autocommit is " + autoCommit);
-						System.err.println("modFileSet : " + modFileSet.toString());
-						System.err.println("Auto committing");
-						try {
-							Thread.sleep(waitTime);
-						} catch (InterruptedException e) {
-							log("####Error###");
-							log(e.getMessage());
-							e.printStackTrace();
-						}
 						commitCheckPoint(true);
 					}
 					autoCommit = isAutoCommit();
 				}
+				
+	
 			}
 		});
 
@@ -518,6 +520,11 @@ public class Project extends Observable {
 	 */
 	public void setWaitTime(long waitTime) {
 		this.waitTime = waitTime;
+	}
+
+	public void stopAutoCommit() {
+		autoCommitThread.interrupt();
+		
 	}
 
 	// }}}

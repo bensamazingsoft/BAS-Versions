@@ -86,10 +86,11 @@ public class MainPnl extends JPanel implements Observer {
 	private final JPanel panel_8 = new JPanel();
 	private final JButton restoreBut = new JButton("Restore Files");
 	private final JButton archiveBut = new JButton("Archive project");
-	private final JLabel autoCommiWaitTimeLbl = new JLabel("Auto commit every (ms)");
+	private final JLabel autoCommiWaitTimeLbl = new JLabel("Auto commit every (min)");
 	private final JCheckBox autoCommiWaitTimeCb = new JCheckBox("");
 	private final JTextField autoCommiWaitTimeTf = new JTextField();
 	private final JPanel panel_9 = new JPanel();
+	private Thread watchThread;
 
 	/**
 	 * Create the panel.
@@ -338,7 +339,7 @@ public class MainPnl extends JPanel implements Observer {
 		commitButtPnl.setLayout(new BoxLayout(commitButtPnl, BoxLayout.Y_AXIS));
 
 		commitButtPnl.add(createChkptBut);
-		
+
 		commitButtPnl.add(panel_9);
 		autoCommiWaitTimeCb.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -354,7 +355,7 @@ public class MainPnl extends JPanel implements Observer {
 			}
 		});
 		panel_9.add(autoCommiWaitTimeLbl);
-		autoCommiWaitTimeTf.setText("10000");
+		autoCommiWaitTimeTf.setText("20");
 		panel_9.add(autoCommiWaitTimeTf);
 		autoCommiWaitTimeTf.setColumns(10);
 
@@ -413,10 +414,13 @@ public class MainPnl extends JPanel implements Observer {
 			@Override
 			public void run() {
 				project.setAutoCommit(autoCommiWaitTimeCb.isSelected());
-				project.setWaitTime(Long.valueOf(autoCommiWaitTimeTf.getText()));
+				project.setWaitTime((Long.valueOf(autoCommiWaitTimeTf.getText())) * 60 * 1000);
+				config.getProp().setProperty("waitTime",
+						String.valueOf(Long.valueOf(autoCommiWaitTimeTf.getText()) * 60 * 1000));
+				config.updateConf();
 			}
 		}).start();
-		
+
 	}
 
 	protected void archiveAction() {
@@ -494,13 +498,30 @@ public class MainPnl extends JPanel implements Observer {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
+
 				if (result == JFileChooser.APPROVE_OPTION) {
 
-					initPanel(new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath())));
+					if (project != null) {
+						project.stopAutoCommit();
+						watchThread.interrupt();
+						CheckPoint.setCheckPointId(0);
+						lastChkptLbl.setText("");
+						chkptDateLbl.setText("");
+
+					}
+
+					Project newProject = new Project(Paths.get(newJfc.getSelectedFile().getAbsolutePath()));
+					project = newProject;
+
+					initPanel(project);
+					project.reScan();
 					project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
 					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
+					project.setWaitTime(Long.valueOf(config.getProp().getProperty("waitTime")));
 					config.updateConf();
+
+					update(null, null);
 
 				}
 			}
@@ -519,10 +540,12 @@ public class MainPnl extends JPanel implements Observer {
 			public void run() {
 				if (result == JFileChooser.APPROVE_OPTION) {
 
-					initPanel(new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc()));
+					project = new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc());
+					initPanel(project);
 					project.addObserver(MainPnl.this);
 					updateBut.setEnabled(true);
 					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
+					project.setWaitTime(Long.valueOf(config.getProp().getProperty("waitTime")));
 					config.updateConf();
 					restoreBut.setEnabled(true);
 					archiveBut.setEnabled(true);
@@ -536,12 +559,20 @@ public class MainPnl extends JPanel implements Observer {
 	public void initPanel(Project project) {
 
 		this.project = project;
-		new Thread(new Runnable() {
+		watchThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
+
+				if (Thread.interrupted()) {
+					System.out.println("WatchService interruted");
+					return;
+				}
+
 				jon = new NightsWatcher(project);
 			}
-		}).start();
+		});
+		watchThread.start();
+
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				watchPauseBut.setEnabled(true);
@@ -563,7 +594,7 @@ public class MainPnl extends JPanel implements Observer {
 
 				createChkptBut.setEnabled(true);
 				noFilterCb.setEnabled(true);
-				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime()));
+				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime() / 60000));
 				revalidate();
 				repaint();
 			}
@@ -587,7 +618,7 @@ public class MainPnl extends JPanel implements Observer {
 					lastChkptLbl.setText(project.getCheckPointStack().peekLast().toString().trim());
 					chkptDateLbl.setText(project.getCheckPointStack().peekLast().getDateCreated().toString().trim());
 				}
-				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime()));
+				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime() / 60000));
 				revalidate();
 				repaint();
 			}

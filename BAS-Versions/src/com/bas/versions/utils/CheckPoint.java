@@ -290,7 +290,7 @@ public class CheckPoint extends Observable implements Comparable<CheckPoint> {
 	 * @param chkptId
 	 *            the chkptId to set
 	 */
-	public static void setVersionId(int versionId) {
+	public static void setCheckPointId(int versionId) {
 		CheckPoint.chkptId = versionId;
 	}
 
