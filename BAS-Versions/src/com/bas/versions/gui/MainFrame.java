@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -22,16 +24,23 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -42,12 +51,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.bas.versions.utils.BasProperties;
 import com.bas.versions.utils.CheckPoint;
+import com.bas.versions.utils.MessageIncrementer;
 import com.bas.versions.utils.NightsWatcher;
 import com.bas.versions.utils.Project;
 import com.bas.versions.utils.ProjectRestorer;
 import com.bas.versions.xml.ProjectParser;
 
-public class MainPnl extends JPanel implements Observer {
+public class MainFrame extends JFrame implements Observer {
 	/**
 	 * 
 	 */
@@ -58,8 +68,6 @@ public class MainPnl extends JPanel implements Observer {
 	private JTextField filterOutTf;
 	private JTextField filterInTf;
 	private JTextPane msgTp = new JTextPane();
-	private JButton loadBut = new JButton("Load");
-	private JButton newBut = new JButton("New");
 	private JButton createChkptBut = new JButton("Commit new CheckPoint");
 	private JButton updateBut = new JButton("update");
 	private JLabel projectDirLbl = new JLabel("");
@@ -82,20 +90,36 @@ public class MainPnl extends JPanel implements Observer {
 	private final JCheckBox noFilterCb = new JCheckBox("No filters");
 	BasProperties config;
 	NightsWatcher jon;
-	private final JButton watchPauseBut = new JButton("Pause live update");
-	private final JPanel panel_8 = new JPanel();
-	private final JButton restoreBut = new JButton("Restore Files");
-	private final JButton archiveBut = new JButton("Archive project");
 	private final JLabel autoCommiWaitTimeLbl = new JLabel("Auto commit every (min)");
 	private final JCheckBox autoCommiWaitTimeCb = new JCheckBox("");
 	private final JTextField autoCommiWaitTimeTf = new JTextField();
 	private final JPanel panel_9 = new JPanel();
 	private Thread watchThread;
+	private final JMenuBar menuBar = new JMenuBar();
+	private final JMenu mnNewMenu = new JMenu("Project");
+	private final JMenuItem mntmNewMenuItem = new JMenuItem("New");
+	private final JMenuItem mntmNewMenuItem_1 = new JMenuItem("Load");
+	private final JMenu mnTools = new JMenu("Tools");
+	private final JMenuItem mntmCommit = new JMenuItem("Commit");
+	private final JMenuItem mntmRestore = new JMenuItem("Restore");
+	private final JMenuItem mntmArchive = new JMenuItem("Archive");
+	private final JSeparator separator = new JSeparator();
+	private final JMenuItem switchLiveUpdateMit = new JMenuItem("Disable live update");
+	private final JLabel liveUpdateLbl = new JLabel("Live update");
+	ImageIcon iconOn = new ImageIcon(MainFrame.class.getResource("/com/bas/versions/gui/img/on.png"));
+	ImageIcon iconOff = new ImageIcon(MainFrame.class.getResource("/com/bas/versions/gui/img/off.png"));
+	private final JPanel panel = new JPanel();
+	private final JMenuItem toggleAutoCommitMit = new JMenuItem("Toggle Auto-commit");
+	private final JMenu mnNewMenu_1 = new JMenu("?");
+	private final JMenuItem mntmNewMenuItem_2 = new JMenuItem("Help");
+	private final JMenuItem BasvWidgetMit = new JMenuItem("BASV Widget");
 
 	/**
 	 * Create the panel.
 	 */
-	public MainPnl() {
+	public MainFrame() {
+
+		mnTools.setEnabled(false);
 
 		log("\n*******************************************************" + "\nStarted " + new Date() + "\n");
 
@@ -107,16 +131,10 @@ public class MainPnl extends JPanel implements Observer {
 			loadJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
 			newJfc.setCurrentDirectory(new File(config.getProp().getProperty("lastPath") + "\\Bas-CheckPoints"));
 		}
-
-		setPreferredSize(new Dimension(900, 500));
-		setLayout(new BorderLayout(0, 0));
-		restoreBut.setEnabled(false);
+		getContentPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel north = new JPanel();
-		north.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
-				"<html><Strong> <font size=\"4\">project</font> </Strong></html>", TitledBorder.LEADING,
-				TitledBorder.TOP, null, new Color(0, 0, 0)));
-		add(north, BorderLayout.NORTH);
+		getContentPane().add(north, BorderLayout.NORTH);
 		north.setLayout(new BorderLayout(5, 5));
 
 		JPanel panel_12 = new JPanel();
@@ -159,41 +177,16 @@ public class MainPnl extends JPanel implements Observer {
 		chkptDateLbl.setHorizontalAlignment(SwingConstants.LEFT);
 		panel_2.add(chkptDateLbl);
 
-		JPanel panel = new JPanel();
-		FlowLayout flowLayout_1 = (FlowLayout) panel.getLayout();
-		flowLayout_1.setVgap(0);
-		flowLayout_1.setAlignment(FlowLayout.RIGHT);
-		north.add(panel, BorderLayout.EAST);
-
 		newJfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		archiveJFC.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		loadJfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 		loadJfc.setFileFilter(new FileNameExtensionFilter("*.basv filter", "basv"));
 
-		loadBut.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				loadProject();
-			}
-		});
-		loadBut.setToolTipText("load project file");
-		loadBut.setMnemonic('o');
-
-		panel.add(loadBut);
-		newBut.setToolTipText("create new project");
-		newBut.setMnemonic('n');
-		newBut.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				chooseNew();
-			}
-		});
-
-		panel.add(newBut);
-
 		JPanel center = new JPanel();
 		center.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null),
 				"<html><Strong> <font size=\"4\">files</font> </Strong></html>", TitledBorder.LEADING, TitledBorder.TOP,
 				null, new Color(0, 0, 0)));
-		add(center, BorderLayout.CENTER);
+		getContentPane().add(center, BorderLayout.CENTER);
 		center.setLayout(new BorderLayout(0, 0));
 
 		JPanel panel_3 = new JPanel();
@@ -215,7 +208,7 @@ public class MainPnl extends JPanel implements Observer {
 				}
 
 				if (filterInTf.getText().contains("/") || filterInTf.getText().contains("\\")) {
-					filterInTf.setText(filterInTf.getText().replaceAll("(\\\\?)(/?)", ""));
+					filterInTf.setText(filterInTf.getText().replaceAll("[/\\\\]", ""));
 					if (filterInTf.getText().length() == 0) {
 						filterInTf.setText(project.getFilterIn());
 					}
@@ -242,7 +235,7 @@ public class MainPnl extends JPanel implements Observer {
 			@Override
 			public void focusLost(FocusEvent e) {
 				if (filterOutTf.getText().contains("/") || filterOutTf.getText().contains("\\")) {
-					filterOutTf.setText(filterOutTf.getText().replaceAll("(\\\\?)(/?)", ""));
+					filterOutTf.setText(filterOutTf.getText().replaceAll("[/\\\\]", ""));
 					JOptionPane.showMessageDialog(null, "Can't have \"/\" or \"\\\" in filters", "error",
 							JOptionPane.ERROR_MESSAGE);
 				}
@@ -277,28 +270,21 @@ public class MainPnl extends JPanel implements Observer {
 		noFilterCb.setToolTipText("Disable filtering");
 
 		panel_3.add(noFilterCb);
-
-		watchPauseBut.setEnabled(false);
-		watchPauseBut.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-
-				if (!NightsWatcher.isPause()) {
-					NightsWatcher.setPause(true);
-					watchPauseBut.setText("resume live update");
-					return;
-				}
-
-				if (NightsWatcher.isPause()) {
-					NightsWatcher.setPause(false);
-					watchPauseBut.setText("Pause live update");
-					project.reScan();
-					return;
-				}
-
+		liveUpdateLbl.setAlignmentX(Component.RIGHT_ALIGNMENT);
+		liveUpdateLbl.setHorizontalAlignment(SwingConstants.CENTER);
+		liveUpdateLbl.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				pauseLiveUpdateAction();
+				switchLiveUpdateMit.setText(NightsWatcher.isPause() ? "Enable live update" : "Disable live update");
+				liveUpdateLbl.setIcon(NightsWatcher.isPause() ? iconOff : iconOn);
 			}
 		});
-
-		panel_3.add(watchPauseBut);
+		panel_3.add(panel);
+		panel.setLayout(new BorderLayout(0, 0));
+		panel.add(liveUpdateLbl);
+		liveUpdateLbl.setIcon(iconOn);
+		liveUpdateLbl.setEnabled(false);
 
 		panel4Files.setPreferredSize(new Dimension(300, 300));
 		panel4Files.setBorder(new TitledBorder(new CompoundBorder(null, UIManager.getBorder("CheckBoxMenuItem.border")),
@@ -328,25 +314,29 @@ public class MainPnl extends JPanel implements Observer {
 		center.add(panel_4, BorderLayout.CENTER);
 
 		JPanel south = new JPanel();
-		add(south, BorderLayout.SOUTH);
+		getContentPane().add(south, BorderLayout.SOUTH);
 		south.setLayout(new BorderLayout(0, 0));
 
 		JPanel commitButtPnl = new JPanel();
-		south.add(commitButtPnl, BorderLayout.EAST);
+		south.add(commitButtPnl, BorderLayout.CENTER);
 		createChkptBut.setToolTipText("create a new checkpoint in the project");
 		createChkptBut.setMnemonic('c');
 		createChkptBut.setEnabled(false);
 		createChkptBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 
-				commit();
+				commitButAction();
 			}
 		});
 		commitButtPnl.setLayout(new BoxLayout(commitButtPnl, BoxLayout.Y_AXIS));
 
 		commitButtPnl.add(createChkptBut);
+		FlowLayout flowLayout_4 = (FlowLayout) panel_9.getLayout();
+		flowLayout_4.setAlignment(FlowLayout.LEFT);
+		panel_9.setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		commitButtPnl.add(panel_9);
+		autoCommiWaitTimeCb.setEnabled(false);
 		autoCommiWaitTimeCb.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				autoCommiWaitTimeCbAction();
@@ -375,12 +365,12 @@ public class MainPnl extends JPanel implements Observer {
 		});
 		autoCommiWaitTimeTf.setText("20");
 		panel_9.add(autoCommiWaitTimeTf);
-		autoCommiWaitTimeTf.setColumns(10);
+		autoCommiWaitTimeTf.setColumns(4);
 
 		JPanel msgPnl = new JPanel();
 		FlowLayout fl_msgPnl = (FlowLayout) msgPnl.getLayout();
 		fl_msgPnl.setAlignment(FlowLayout.RIGHT);
-		south.add(msgPnl, BorderLayout.CENTER);
+		south.add(msgPnl, BorderLayout.WEST);
 
 		JLabel msgPnlLbl = new JLabel("CheckPoint Message :");
 		msgPnlLbl.setVerticalAlignment(SwingConstants.TOP);
@@ -407,23 +397,122 @@ public class MainPnl extends JPanel implements Observer {
 		JScrollPane scrollPane = new JScrollPane(msgTp);
 		msgPnl.add(scrollPane);
 
-		south.add(panel_8, BorderLayout.SOUTH);
-		restoreBut.addActionListener(new ActionListener() {
+		setJMenuBar(menuBar);
+		mnNewMenu.setMnemonic('p');
+		mnNewMenu.setHorizontalAlignment(SwingConstants.LEFT);
+
+		menuBar.add(mnNewMenu);
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				chooseNew();
+			}
+		});
+		mntmNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+		mntmNewMenuItem.setHorizontalAlignment(SwingConstants.LEFT);
+
+		mnNewMenu.add(mntmNewMenuItem);
+		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				loadProject();
+			}
+		});
+		mntmNewMenuItem_1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mntmNewMenuItem_1.setHorizontalAlignment(SwingConstants.LEFT);
+
+		mnNewMenu.add(mntmNewMenuItem_1);
+		mnTools.setMnemonic('t');
+
+		menuBar.add(mnTools);
+		mntmCommit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		mntmCommit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				commitButAction();
+			}
+		});
+		mntmCommit.setHorizontalAlignment(SwingConstants.LEFT);
+
+		mnTools.add(mntmCommit);
+		mntmRestore.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		mntmRestore.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				@SuppressWarnings("unused")
 				RestoreFrame rf = new RestoreFrame(project);
 			}
 		});
+		mntmRestore.setHorizontalAlignment(SwingConstants.LEFT);
 
-		panel_8.add(restoreBut);
-		archiveBut.addActionListener(new ActionListener() {
+		mnTools.add(mntmRestore);
+		mntmArchive.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK));
+		mntmArchive.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				archiveAction();
 			}
 		});
+		mntmArchive.setHorizontalAlignment(SwingConstants.LEFT);
 
-		archiveBut.setEnabled(false);
-		panel_8.add(archiveBut);
+		mnTools.add(mntmArchive);
+
+		mnTools.add(separator);
+		switchLiveUpdateMit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pauseLiveUpdateAction();
+				switchLiveUpdateMit.setText(NightsWatcher.isPause() ? "Enable live update" : "Disable live update");
+				liveUpdateLbl.setIcon(NightsWatcher.isPause() ? iconOff : iconOn);
+			}
+		});
+
+		mnTools.add(switchLiveUpdateMit);
+		toggleAutoCommitMit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				autoCommiWaitTimeCb.setSelected(!autoCommiWaitTimeCb.isSelected());
+				autoCommiWaitTimeCbAction();
+			}
+		});
+
+		mnTools.add(toggleAutoCommitMit);
+		BasvWidgetMit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BasvWidgetMitAction();
+			}
+		});
+
+		mnTools.add(BasvWidgetMit);
+
+		menuBar.add(mnNewMenu_1);
+		mntmNewMenuItem_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				helpMitAction();
+			}
+		});
+		mntmNewMenuItem_2.setHorizontalAlignment(SwingConstants.LEFT);
+
+		mnNewMenu_1.add(mntmNewMenuItem_2);
+
+		pack();
+	}
+
+	protected void BasvWidgetMitAction() {
+		@SuppressWarnings("unused")
+		BasvWidget widget = new BasvWidget(project);
+	}
+
+	protected void helpMitAction() {
+		@SuppressWarnings("unused")
+		HelpFrame helpFrame = new HelpFrame();
+
+	}
+
+	private void pauseLiveUpdateAction() {
+		if (!NightsWatcher.isPause()) {
+			NightsWatcher.setPause(true);
+			return;
+		}
+
+		if (NightsWatcher.isPause()) {
+			NightsWatcher.setPause(false);
+			project.reScan();
+			return;
+		}
 
 	}
 
@@ -491,7 +580,7 @@ public class MainPnl extends JPanel implements Observer {
 		}).start();
 	}
 
-	protected void commit() {
+	protected void commitButAction() {
 
 		log("Committed checkPoint " + new Date());
 
@@ -501,7 +590,6 @@ public class MainPnl extends JPanel implements Observer {
 			public void run() {
 				int info = JOptionPane.OK_OPTION;
 				if (msgTp.getText().length() == 0 || msgTp.getText().equals("Please insert message")) {
-					new JOptionPane();
 					info = JOptionPane.showConfirmDialog(null, "Warning", "Checkpoint message is empty",
 							JOptionPane.OK_CANCEL_OPTION);
 				}
@@ -511,9 +599,7 @@ public class MainPnl extends JPanel implements Observer {
 					project.commitCheckPoint(false);
 					lastChkptIndicLbl.setText("Last checkpoint :");
 					chkptDateIndicLbl.setText("created : ");
-					msgTp.setText("");
-					restoreBut.setEnabled(true);
-					archiveBut.setEnabled(true);
+					msgTp.setText(MessageIncrementer.increment(msgTp.getText()));
 				} else {
 					msgTp.setText("Please insert message");
 				}
@@ -548,7 +634,7 @@ public class MainPnl extends JPanel implements Observer {
 
 					initPanel(project);
 					project.reScan();
-					project.addObserver(MainPnl.this);
+					project.addObserver(MainFrame.this);
 					updateBut.setEnabled(true);
 					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
 					project.setWaitTime(Long.valueOf(config.getProp().getProperty("waitTime")));
@@ -575,13 +661,14 @@ public class MainPnl extends JPanel implements Observer {
 
 					project = new Project(new ProjectParser(loadJfc.getSelectedFile()).getDoc());
 					initPanel(project);
-					project.addObserver(MainPnl.this);
+					project.addObserver(MainFrame.this);
 					updateBut.setEnabled(true);
 					config.getProp().setProperty("lastPath", project.getProjectPath().toFile().getAbsolutePath());
 					project.setWaitTime(Long.valueOf(config.getProp().getProperty("waitTime")));
 					config.updateConf();
-					restoreBut.setEnabled(true);
-					archiveBut.setEnabled(true);
+					noFilterCb.setSelected(false);
+					filterInTf.setEnabled(true);
+					filterOutTf.setEnabled(true);
 					update(null, null);
 				}
 			}
@@ -602,13 +689,13 @@ public class MainPnl extends JPanel implements Observer {
 				}
 
 				jon = new NightsWatcher(project);
+
 			}
 		});
 		watchThread.start();
 
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				watchPauseBut.setEnabled(true);
 				projectLbl.setText("/" + project.getProjectPath().toFile().getName() + "/");
 				projectDirLbl.setText("Created : " + project.getDateCreated());
 				if (project.getCheckPointStack().peekLast() != null) {
@@ -628,6 +715,9 @@ public class MainPnl extends JPanel implements Observer {
 				createChkptBut.setEnabled(true);
 				noFilterCb.setEnabled(true);
 				autoCommiWaitTimeTf.setText(String.valueOf(project.getWaitTime() / 60000));
+				mnTools.setEnabled(project != null ? true : false);
+				liveUpdateLbl.setEnabled(true);
+				autoCommiWaitTimeCb.setEnabled(true);
 				revalidate();
 				repaint();
 			}

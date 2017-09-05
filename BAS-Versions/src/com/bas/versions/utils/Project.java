@@ -185,12 +185,12 @@ public class Project extends Observable {
 	 * 
 	 */
 	public void commitCheckPoint(boolean auto) {
-		CheckPoint newVers;
+		CheckPoint newCheckPoint;
 
-		newVers = auto ? new CheckPoint(new Date(), projectPath, modFileSet, "Automatic commit")
+		newCheckPoint = auto ? new CheckPoint(new Date(), projectPath, modFileSet, "Automatic commit")
 				: new CheckPoint(new Date(), projectPath, modFileSet, chkptMsg);
-		newVers.writeFiles();
-		checkpointStack.add(newVers);
+		newCheckPoint.writeFiles();
+		checkpointStack.add(newCheckPoint);
 		filesInProjectFolder = new FileList(projectPath).getResult();
 		filesFromXml = filesInProjectFolder;
 		filesFromXml.removeIf(file -> nonCommittedFiles.contains(file) && !modFileSet.contains(file));
@@ -246,7 +246,6 @@ public class Project extends Observable {
 				System.err.println("starting auto commit");
 				while (true) {
 
-					log("Performing AutoCommit " + new Date());
 					try {
 						Thread.sleep(waitTime);
 					} catch (InterruptedException e) {
@@ -256,6 +255,7 @@ public class Project extends Observable {
 					}
 					if (isAutoCommit() && !modFileSet.isEmpty()) {
 						commitCheckPoint(true);
+						log("Performing AutoCommit " + new Date());
 					}
 					autoCommit = isAutoCommit();
 				}

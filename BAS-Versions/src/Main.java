@@ -3,25 +3,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import com.bas.versions.gui.MainPnl;
+import com.bas.versions.gui.MainFrame;
 
 public class Main {
 
 	public static void main(String[] args) {
 
-//		Path path = Paths.get("e:\\projet");
-//		Project pro = new Project(path);
-//		pro.commitCheckPoint();
-//		pro.commitCheckPoint();
-//		pro.commitCheckPoint();
-//		
-//		
-//		Project pr = new Project(new ProjectParser(new File("e:\\projet\\BAS-CheckPoints\\projet.basv")).getDoc());
-//		
-//		System.out.println(pr.getCheckPointStack().toString());
-		
-		
-		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				makeFrame();
@@ -38,14 +25,11 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		JFrame frame = new JFrame();
-		frame.setBounds(0, 0, 900, 600);
+		MainFrame frame = new MainFrame();
 		frame.setTitle("Ben's Amazing Versions - the Tool you needed your whole life");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		MainPnl mainpnl = new MainPnl();
-		frame.getContentPane().add(mainpnl);
-		frame.setLocationRelativeTo(null);
-
+//		frame.setLocationRelativeTo(null);
+		frame.pack();
 		frame.setVisible(true);
 
 	}

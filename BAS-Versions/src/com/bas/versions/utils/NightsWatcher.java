@@ -71,9 +71,6 @@ public class NightsWatcher {
 					if (trigPath.toFile().isDirectory() && !(trigPath.startsWith(project.getWorkPath()))) {
 						try {
 							registerPaths();
-							// trigPath.register(watcher,
-							// StandardWatchEventKinds.ENTRY_CREATE,
-							// StandardWatchEventKinds.ENTRY_MODIFY);
 							log("Watch Service : registered folder : " + pathEvent.context().toString());
 						} catch (IOException e) {
 							JOptionPane.showMessageDialog(null, e.getMessage(),
@@ -104,7 +101,7 @@ public class NightsWatcher {
 	 */
 	private void registerPaths() throws IOException {
 
-		log("Watch Service : registering paths");
+//		log("Watch Service : registering paths");
 
 		Files.walkFileTree(path2Watch, new SimpleFileVisitor<Path>() {
 
@@ -114,8 +111,7 @@ public class NightsWatcher {
 					@SuppressWarnings("unused")
 					WatchKey wk = file.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
 							StandardWatchEventKinds.ENTRY_MODIFY);
-					log("\t registered : " + file.toFile().getAbsolutePath());
-					System.out.println("\t registered : " + file.toFile().getAbsolutePath());
+//					log("\t registered : " + file.toFile().getAbsolutePath());
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -144,6 +140,7 @@ public class NightsWatcher {
 	 */
 	public static void setPause(boolean pause) {
 		NightsWatcher.pause = pause;
+		System.err.println("pause = " + NightsWatcher.pause);
 	}
 
 }

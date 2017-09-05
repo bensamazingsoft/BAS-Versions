@@ -32,11 +32,10 @@ public class ProjectRestorer extends Observable {
 
 	private Project project;
 	private Path restorePath;
-	private int level;
 	private Deque<CheckPoint> cpList = new LinkedList<>();
 	private Map<String, File> cpFiles2Restore = new HashMap<>();
 	private Set<File> archiveFile = new HashSet<>();
-	private Map<File,File> files2Copy = new HashMap<>();
+	private Map<File, File> files2Copy = new HashMap<>();
 	private BasProgressBar bar;
 	private int nbFiles;
 	private boolean archive = false;
@@ -45,7 +44,6 @@ public class ProjectRestorer extends Observable {
 
 		// initiate fields for archiving process
 		this.project = project;
-		this.level = level;
 		cpList = project.getCheckPointStack();
 		restorePath = newPath;
 		archive = !(restorePath.equals(project.getProjectPath()));
@@ -55,26 +53,26 @@ public class ProjectRestorer extends Observable {
 
 		// collect all files, in reversed order, to have the latest version of
 		// each file put first in the Map, rejecting files already there.
-		cpList.stream().sorted(Collections.reverseOrder())
-				.forEach(cp -> cp.getChckPtFileList().stream().forEach(f -> {
-					if (!cpFiles2Restore.containsKey(f.getName())) {
-						cpFiles2Restore.put(f.getName(), f);
-					}
-				}));
+		cpList.stream().sorted(Collections.reverseOrder()).forEach(cp -> cp.getChckPtFileList().stream().forEach(f -> {
+			if (!cpFiles2Restore.containsKey(f.getName())) {
+				cpFiles2Restore.put(f.getName(), f);
+			}
+		}));
 
 		// getting project files that were filtered out (not in any Checkpoint)
 		if (archive) {
-			archiveFile = new FileList(project.getListFile(), "*", "BAS-CheckPoints,", project.getProjectPath()).getResult().stream()
-					.filter(file -> !cpFiles2Restore.containsKey(file.getName())).collect(Collectors.toSet());
+			archiveFile = new FileList(project.getListFile(), "*", "BAS-CheckPoints,", project.getProjectPath())
+					.getResult().stream().filter(file -> !cpFiles2Restore.containsKey(file.getName()))
+					.collect(Collectors.toSet());
 		}
-		
+
 		// for the progrees bar
 		nbFiles = cpFiles2Restore.size() + archiveFile.size();
-		
+
 		// filling the map of files to process
 		cpFiles2Restore.values().stream().forEach(file -> files2Copy.put(file, reverseFilename(file, true)));
 		archiveFile.stream().forEach(file -> files2Copy.put(file, reverseFilename(file, false)));
-		
+
 	}
 
 	/**
@@ -83,9 +81,9 @@ public class ProjectRestorer extends Observable {
 	 * 
 	 */
 	public void restoreFiles() {
-		
+
 		System.err.println(SwingUtilities.isEventDispatchThread());
-		
+
 		boolean live = NightsWatcher.isPause();
 		NightsWatcher.setPause(true);
 
@@ -107,8 +105,7 @@ public class ProjectRestorer extends Observable {
 				File file = it.next();
 				try {
 					files2Copy.get(file).mkdirs();
-					Files.copy(file.toPath(),files2Copy.get(file).toPath(),
-							StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(file.toPath(), files2Copy.get(file).toPath(), StandardCopyOption.REPLACE_EXISTING);
 					setChanged();
 					notifyObservers(new BasPgBarUpdtePair("copying file : " + file.getName(), count++));
 					log("\trestored file : " + file.getName());
@@ -144,17 +141,22 @@ public class ProjectRestorer extends Observable {
 	 */
 	private File reverseFilename(File in, boolean cp) {
 
+		// ex. c:/projectPath/workPath/Checkpoint0001/file.txt
 		String baseFileName = in.getAbsolutePath();
+		// ex. c:/projectPath/workPath/Checkpoint0001/file.txt ->
+		// /Checkpoint0001/file.txt
 		String outFileName = baseFileName.replace(project.getWorkPath().toFile().getAbsolutePath(), "");
 		if (cp) {
+			// ex. /Checkpoint0001/file.txt -> file.txt
 			Path temp = new File(outFileName).toPath();
 			outFileName = outFileName.replace("\\" + temp.getName(0) + "\\", "");
 		}
-		if (!cp){
+		if (!cp) {
+			// ex. c:/projectPath/file.txt -> file.txt
 			outFileName = outFileName.replace(project.getProjectPath().toFile().getAbsolutePath(), "");
 		}
 		File out = new File(restorePath.toFile().getAbsolutePath() + "\\" + outFileName);
-	
+
 		return out;
 
 	}
